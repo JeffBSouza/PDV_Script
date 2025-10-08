@@ -66073,7 +66073,7 @@ git remote add origin https://github.com/JeffBSouza/PDV_Script.git
 
 
 JeffBSouza
-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
+
 
 
 ## Git - Subir alterações
@@ -66084,7 +66084,7 @@ git commit -m "COMENTARIO-AQUI"
 git push origin main
 
 JeffBSouza
-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
+
 
 
 git pull origin main        # garante que está atualizado
