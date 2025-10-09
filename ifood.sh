@@ -10,7 +10,7 @@ URL_GERENCIADORIFOOD="https://storage.googleapis.com/linux-pdv/Jeff/iFood_Files/
 DESTINO_TEMP="/tmp/vrgerenciadorifood"
 
 pause() {
-echo -e "${WB2}Press any button to Exit or Continue...${End}"
+echo -e "Press any button to Exit or Continue..."
 read -n 1 -s -r
 }
 
@@ -31,7 +31,7 @@ fi
 }
 
 finished() {
-echo -e "${G1}✅${End} - ${BG1}PROCESSO ENCERRADO${End} - ${G1}✅${End}"
+echo -e "✅ - PROCESSO ENCERRADO - ✅"
 }
 
 filepermission_create() {

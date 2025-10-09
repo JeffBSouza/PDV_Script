@@ -15,7 +15,7 @@ function pause_on_error() {
 }
 
 pause() {
-echo -e "${WB2}Press any button to Exit or Continue...${End}"
+echo -e "Press any button to Exit or Continue..."
 read -n 1 -s -r
 }
 
@@ -679,12 +679,12 @@ echo -e "\n[INFO] - InstallReinstall - 2.5.9.27139-0.i686 Firebird ... - [ $(dat
 echo -e "Download Firebird - [ $(dateFull_Info) ]"
 sudo wget --no-check-certificate "https://storage.googleapis.com/linux-pdv/Jeff/LinuxFiles/firebird-2.5.zip" -O $firebirdInstallFolder/firebird-2.5.zip >/dev/null 2>&1
     if [ $? -ne 0 ] || [ ! -s $firebirdInstallFolder/firebird-2.5.zip ]; then
-		echo "" ; echo -e "${R1}Erro Realizar Download Firebird${End}" ; pause ; menuOptions
+		echo "" ; echo -e "Erro Realizar Download Firebird" ; pause ; menuOptions
 	fi
-echo -e "\n${G1}Extraindo Firebird${End}"
+echo -e "\nExtraindo Firebird"
 sudo unzip -q -o $firebirdInstallFolder/firebird-2.5.zip -d $firebirdInstallFolder
 	if [ $? -ne 0 ]; then
-		echo "" ; echo -e "${R1}Erro Extrair Firebird${End}" ; pause ; menuOptions
+		echo "" ; echo -e "Erro Extrair Firebird" ; pause ; menuOptions
     else
         sudo rm -rf $firebirdInstallFolder/firebird-2.5.zip >/dev/null 2>&1
    	fi
