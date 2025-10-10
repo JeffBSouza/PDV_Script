@@ -68,6 +68,13 @@ Ok, todos esses cartõe são Voucher, portanto voce precisa seguir o seguinte pass
 2) Escolher com qual autorizadora voce vai passar eles (rede, cielo, sipag, pagseguro, etc) e entrar em contato com ela e solicitar a ativação desse cartão no sistema deles e liberação da carga da tabelas nova com eles incluso.
 3) Nos procurar, assim ja poderemos configura-los no multi bandeiras do sitef e aplicar a carga de tabelas e nisso eles devem funcionar.
 
+
+########################################################################################
+## Fixar bat em barra de tarefas
+Edite o início do campo "Destino" assim:
+%COMSPEC% /C "D:\Seu arquivo\Local\xy.bat"
+
+Limpe o campo "Iniciar em", para que fique em branco
 ########################################################################################
 ## Orientação PIX
 
@@ -7304,7 +7311,40 @@ ORDER BY venda.DATA DESC
 ===========================================
 ## Parametros autorizador no VR.FDB
 SELECT * FROM parametrovalor WHERE id_parametro IN (35,36,43,44,2);
-===========================================
+======================================================================================
+## Identifica cupom x vendatef
+
+SELECT 
+v.id AS "IDVenda", 
+STRING_AGG('Data: ' || v.DATA || ' / Cupom: ' || v.numerocupom || ' / Ecf: ' || v.ecf, ', ') AS "Info",
+v.cancelado AS "CupomCancelado",
+STRING_AGG('Valor: ' || vf.valor || ' / Finalizadora: ' || finalizadora.descricao, ', ') AS "Info",
+STRING_AGG('Cartao: ' || t.descricao || ' / TipoTef: ' || vf.id_tipotef , ', ') AS "TipoTef_Finalizadora",
+STRING_AGG('Cartao: ' || vtef.nomecartao || ' / TipoTef: ' || vtef.id_tipotef || ' / VendaTef: ' || vtef.id || ' / Valor: ' || vtef.valor, ', ') AS "Info_VendaTef", 
+CASE
+WHEN vtef.id_situacaotef = 2 THEN 'CANCELADO'
+WHEN vtef.id_situacaotef = 1 THEN 'APROVADO'
+WHEN vtef.id_situacaotef = 0 THEN 'PENDENTE'
+END AS "StatusTransacaoTEF"
+FROM pdv.venda AS v
+INNER JOIN pdv.vendafinalizadora AS vf ON v.id=vf.id_venda
+INNER JOIN pdv.finalizadora AS finalizadora ON vf.id_finalizadora=finalizadora.id
+LEFT JOIN pdv.tipotef AS t ON t.id=vf.id_tipotef
+LEFT JOIN pdv.vendapdvvendatef vtef2 ON vtef2.id_venda=v.id
+LEFT JOIN pdv.vendatef AS vtef ON vtef.id=vtef2.id_vendatef
+WHERE 1=1 
+AND vf.id_finalizadora IN (3)
+AND v.DATA >= '2025-10-XX'
+AND v.ecf=XX
+AND v.id_loja=XX
+GROUP BY
+  v.id, v.DATA, v.numerocupom, v.subtotalimpressora, v.valordesconto, v.valoracrescimo,
+  vf.valor, finalizadora.descricao,t.id, t.descricao,vtef.id, vtef.nomecartao, vtef.id_tipotef,
+  vtef.valor,vf.id_tipotef, vtef.id_tipotef
+ORDER BY v.numerocupom,v.data;
+======================================================================================
+
+
 ## Erro de cred / debito cred/deb
 select * from tiporecebivel where id_fornecedor is null and id_tipotef > 0
 SELECT * FROM tiporecebivel WHERE id_tipotef IS NOT NULL AND id_fornecedor IS null;
@@ -9843,6 +9883,9 @@ https://account.islonline.net/start/ISLAlwaysOn?cmdline=%22password_md5%22+%22c5
 
 PDV_TEMP
 https://account.islonline.net/start/ISLAlwaysOn?cmdline=%22password_md5%22+%22c5d7c5561d84f6a20e59bcdccb9093be%22+%22%2fVERYSILENT%22+%22grant_silent%22+%22zeJxdjztLxEAURrksdlZWlil1ccO8H7U2gqigWAXkzsydNRozkkkIWvnTXS1tPw6H8%2b1j3sD1w01zNw79SM0tzWuZ3k5g36cNKMVijFxbryV3kQQKjNzxoDMpT1aTZjpwk4NlwlDSmSVpiCXE7IN2lJBCREeCC2aiRUwqOem5MU5oq3U0XHNJgQkvecreeDxwKkmbpXDyGyoADit%2b1jLutm1fh%2fLX2Y40n8ICIJtdc3%2f1VJ8f6f2jOeu6WvK84kQvZanUbS%2ba%2f9Mr5UzTwdeG5Qvncn4Jy%2b9XK5V1yhimlD%2bGI%2fgBXzFTcA%3d%3d%22+%22ignore_system_account%22+%22grant_password_md5%22+%22c5d7c5561d84f6a20e59bcdccb9093be%22&__ISL+Network+Start__hide_gui=1
+
+CHANGE-MY-NAME
+https://account.islonline.net/start/ISLAlwaysOn?cmdline=%22password_md5%22+%22c5d7c5561d84f6a20e59bcdccb9093be%22+%22%2fVERYSILENT%22+%22grant_silent%22+%22zeJxtUj1PxDAMVUBsTEyMHQFB1KRN2o6MSAgkkJhucRKnhMslkDR3fCz8dAoj18XD8%2fN7frJHbQ%2fJzeNtdR%2b8C1jd4bSLaX1CRmcOSdvWWmsmukE0rNfIgYNmPVPCYjtgJ1DUQjFpVVdziUbY2jQSawNgByV6NIBKQ4%2bc8VrqDsC0pm8GJmXPRSeElkywBlXNh4YZO8gBZl5rms42vG%2b%2bSSYE%2fA4%2bcgxXF9RlH%2f%2f2pAGnU1IIYdVV9fQwlwfUuLkJeQIPJuYZuR4LJAPBxApeSp6wOlutcrTTDhI%2bx5JxdXFZ%2fYcseveKNMEm5v3uCCo59B6pggTeuAXKbAXbSC0kBwsSzxiSeytIJ3Tv6BLsU17QWkxzZKrKJ0xxn7GexQPQVyh%2bYX4NHwUCjd5tlw02kDT6Bd3fRsk0pgBjWQiXMMzC2fktnH%2bRg%2fL3JB3vmajlfMH2mByRH5IBzI4%3d%22+%22ignore_system_account%22+%22grant_password_md5%22+%22c5d7c5561d84f6a20e59bcdccb9093be%22+%22description%22+%22CHANGE-MY-NAME%22&__ISL+Network+Start__hide_gui=1
 
 
 echo %COMPUTERNAME%
