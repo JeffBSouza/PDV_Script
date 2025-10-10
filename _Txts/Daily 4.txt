@@ -67392,8 +67392,8 @@ VRConcentrador: 4.3.1-25
 Emissão NFe, Retorno: org.postgresql.util.PSQLException: ERROR: relation "notasaidaconfiguracaotributacao" does not exist
   Posição: 16
 
-
-
+Falha finalizar Venda usando Gera NFe erro "Emissão NFe, Retorno: org.postgresql.util.PSQLException: ERROR: relation "notasaidaconfiguracaotributacao" does not exist"
+Ticket original: 2327435
 
 =======================================================================
 Erros de conexão devido instabilidade Autorizador 4.3.3-19
@@ -67942,6 +67942,20 @@ TIcket original: 2436255
 
 
 =======================================================================
+SELECT
+	f.id
+FROM pdv.ficha AS f
+INNER JOIN pdv.fichaitem AS fi ON fi.id_ficha = f.id
+INNER JOIN produtoautomacao AS pa ON pa.codigobarras = fi.codigobarras
+INNER JOIN pdv.dadosficha AS df on df.ficha=f.numeroficha
+WHERE
+	df.identificacao = '22824229'
+	AND f.id_loja = 1;
+
+SELECT * FROM pdv.dadosficha where identificacao='22824229';
+SELECT * FROM pdv.dadosficha where ficha in (2,3,117,189,90,152)
+SELECT * FROM pdv.ficha;
+SELECT * FROM pdv.dadosficha;
 
 
 
@@ -67950,69 +67964,115 @@ TIcket original: 2436255
 =======================================================================
 
 
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
+SELECT
+v.id,v.ecf,v.DATA,v.id_loja,v.horatermino,
+v.datahoraemissaonfce,vnfce.datahoraemissaonfce
+FROM pdv.venda AS v
+JOIN pdv.vendanfce AS vnfce ON v.id=vnfce.id_venda
+WHERE 1=1
+AND v.ecf IN (102) AND v.numerocupom IN (113249) AND v.DATA IN ('2025-08-28')
+--AND v.id IN ();
 
 
 
 
 =======================================================================
 
+1	VENEZA	TRUE	TRUE	4	05.678.702/0001-42	SUPERMERCADO RENDE MAIS	VENEZA SUPERMERCADO LTDA	RECIFE	PE	26
 
 
+SUPERMERCADO RENDE MAIS	- VENEZA - 05.678.702/0001-42
+=======================================================================
+
+
+
+9 Outubro 2025 8:18
+
+=======================================================================
+
+
+
+1563610733
+vrsoftware
+
+=======================================================================
+
+
+
+############################################################
+repositorio.windows = false
+nfce.idtoken=000002
+nfce.csc=AB299AD8-DEC0-4826-BDE0-5A41D4133158
+nfce.certificado.senha=123456
+nfce.certificado.tipo=A1
+nfce.tempoconexao=30
+nfce.tipoambiente=1
+nfce.certificado.diretorio=C:\\vr\\nfe\\certificado\\
+nfce.diretorio=C:\\vr\\nfe\\
+nfce.enviaintermediador=true
+
+nfe.idtoken=000002
+nfe.csc=AB299AD8-DEC0-4826-BDE0-5A41D4133158
+nfe.certificado.senha=123456
+nfe.certificado.tipo=A1
+nfe.tempoconexao=30
+nfe.tipoambiente=1
+nfe.certificado.diretorio=C:\\vr\\nfe\\certificado\\
+nfe.diretorio=C:\\vr\\nfe\\
+############################################################
+
+
+nfce.certificado.senha=123456
+nfce.idtoken=000002
+nfce.csc=AB299AD8-DEC0-4826-BDE0-5A41D4133158
+=======================================================================
+
+
+
+4	LOJA 04	TRUE		1352	19.374.926/0001-75	DEPOSITO ATACADO	JS VIEIRA COMERCIO DE BEBIDAS LTDA	ANGRA DOS REIS	RJ	33
+
+=======================================================================
+
+
+
+VIEIRA COMERCIO DE BEBIDAS - DEPOSITO ATACADO - 19.374.926/0001-75
+
+=======================================================================
+
+select id,cancelado,canceladoemvenda from pdv.venda where numerocupom=2 and ecf=304 and data='2025-07-04'
+select cancelado from pdv.vendaitem where id_venda=2462071
+
+select id,cancelado,canceladoemvenda from pdv.venda where numerocupom=7408 and ecf=404 and data='2025-01-02'
+select cancelado from pdv.vendaitem where id_venda=1211383
+
+
+
+=======================================================================
+4	LOJA 03	TRUE		1923	06.878.294/0005-69	SUPERMERCADO SANTA MARIA	T FREITAS DE FRAGA & CIA LTDA POA	PORTO ALEGRE	RS	43
+
+SUPERMERCADO SANTA MARIA - Lj3 - 06.878.294/0005-69
 
 
 =======================================================================
 
 
 
+select id,cancelado,canceladoemvenda from pdv.venda where numerocupom=15257 and ecf=131 and data='2025-08-01'
+select cancelado from pdv.vendaitem where id_venda=1211383
 
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
+select
+v.cancelado,v.canceladoemvenda
+from pdv.venda as v
+left join pdv.vendanfce as vnfce on v.id=vnfce.id_venda
+where vnfce.id_situacaonfce = 4 and vnfce.transmitido = FALSE and vnfce.contingencia = TRUE
+and v.cancelado=true and v.data >= '2025-01-08'
 
 =======================================================================
 
+LINUX_INSTALL_DATE=$(ls -lct /etc | tail -1 | awk '{print $6, $7, $8}') ; echo "$LINUX_INSTALL_DATE"
 
 
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
+2827	1	2025-10-10	200005	2025-10-10 06:44:00	2025-10-10 14:44:30	100	0.00	1731.81	4.000	00:00:00	
 =======================================================================
 
 
