@@ -57,6 +57,36 @@ printf '%s\n' "$PASSWD" | sudo -S -p '' chmod 777 "$EXPECTFILE" >/dev/null 2>&1
 printf '%s\n' "$PASSWD" | sudo -S -p '' chown "nobody:nogroup" "$EXPECTFILE" >/dev/null 2>&1
 }
 
+dateFull_Info() {
+date '+%Y-%m-%d_%H:%M:%S'
+}
+
+check_repos() {
+# Verifica se o repositório universe está habilitado
+if ! grep -q "^[^#].*universe" /etc/apt/sources.list /etc/apt/sources.list.d/*.list 2>/dev/null; then
+    echo "[INFO] - Habilitando repositório universe"
+    printf '%s\n' "$PASSWD" | sudo -S -p '' add-apt-repository universe -y
+fi
+
+# Verifica se o repositório multiverse está habilitado
+if ! grep -q "^[^#].*multiverse" /etc/apt/sources.list /etc/apt/sources.list.d/*.list 2>/dev/null; then
+    echo "[INFO] - Habilitando repositório multiverse"
+    printf '%s\n' "$PASSWD" | sudo -S -p '' add-apt-repository multiverse -y
+fi
+
+# Verifica se a arquitetura i386 já está adicionada
+if ! dpkg --print-foreign-architectures | grep -qw i386; then
+    echo "[INFO] - Adicionando arquitetura i386"
+    printf '%s\n' "$PASSWD" | safe_dpkg --add-architecture i386
+fi
+}
+
+comandosPreparacao() {
+    sudo dpkg --configure -a
+    sudo apt-get --fix-broken install
+    sudo apt-get -f -y install
+}
+
 # wrapper para dpkg
 safe_dpkg() {
   aptLockFix
@@ -493,6 +523,163 @@ else
 fi
 }
 
+firebirdPDVInstall() {
+
+firebirdInstallFolder="/tmp/firebird_Install/"
+sudo rm -rf $firebirdInstallFolder >/dev/null 2>&1
+sudo mkdir -m 777 $firebirdInstallFolder >/dev/null 2>&1
+
+echo -e "\n[INFO] - InstallReinstall - 2.5.9.27139-0.i686 Firebird ... - [ $(dateFull_Info) ]"
+
+echo -e "Download Firebird - [ $(dateFull_Info) ]"
+sudo wget --no-check-certificate "https://storage.googleapis.com/linux-pdv/Jeff/LinuxFiles/firebird-2.5.zip" -O $firebirdInstallFolder/firebird-2.5.zip >/dev/null 2>&1
+    if [ $? -ne 0 ] || [ ! -s $firebirdInstallFolder/firebird-2.5.zip ]; then
+		echo "" ; echo -e "Erro Realizar Download Firebird" ; pause ; menuOptions
+	fi
+echo -e "\nExtraindo Firebird"
+sudo unzip -q -o $firebirdInstallFolder/firebird-2.5.zip -d $firebirdInstallFolder
+	if [ $? -ne 0 ]; then
+		echo "" ; echo -e "Erro Extrair Firebird" ; pause ; menuOptions
+    else
+        sudo rm -rf $firebirdInstallFolder/firebird-2.5.zip >/dev/null 2>&1
+   	fi
+
+sudo chmod +x $firebirdInstallFolder/firebird-2.5/FirebirdSS-2.5.9.27139-0.i686/install.sh >/dev/null 2>&1
+sudo chmod +x -R $firebirdInstallFolder/firebird-2.5/FirebirdSS-2.5.9.27139-0.i686/* >/dev/null 2>&1
+
+echo -e "\n[INFO] - Instalando pacotes e dependencias . . . - [ $(dateFull_Info) ]"
+check_repos
+sudo apt update
+comandosPreparacao
+sudo dpkg --add-architecture i386
+sudo apt install -y libncurses5 libtommath1 libstdc++5 libncurses5:i386 lib32stdc++6 libncurses6:i386 libtinfo6:i386
+
+firebirdRemover
+
+if [ -e "$firebirdInstallFolder/firebird-2.5/FirebirdSS-2.5.9.27139-0.i686/" ]; then
+    echo -e "\n[INFO] - Instalando Firebird . . .Aguarde . . . - [ $(dateFull_Info) ]"
+    cd $firebirdInstallFolder/firebird-2.5/FirebirdSS-2.5.9.27139-0.i686/
+    sudo ./install.sh
+else
+    echo -e "\n[INFO] - FALHA ACESSAR PASTA DE INSTALACAO DO FIREBIRD - [ $(dateFull_Info) ]"
+    pause ; menuOptions
+fi
+
+local current_date=$(date +%Y-%m-%d)
+if [ -d "/opt/firebird" ]; then
+	# Obter a data de modificação do diretório /opt/firebird no formato YYYY-MM-DD
+	firebird_date=$(stat -c %y /opt/firebird 2>/dev/null | cut -d ' ' -f 1)
+	# Comparar a data do diretório com a data atual
+	if [ "$firebird_date" == "$current_date" ]; then
+		echo -e "\nAplicando permissoes Firebird . . .Aguarde . . . - [ $(dateFull_Info) ]"
+		permissioesFirebird
+	fi
+else
+	echo -e "\n[INFO] - FALHA NA INSTALL/REINSTALL DO FIREBIRD - [ $(dateFull_Info) ]" ; pause
+fi
+}
+
+firebirdRemover() {
+	echo -e "\n[INFO] Removendo Firebird...Aguarde... - [ $(dateFull_Info) ]"
+	
+	variable_firebirdservices=("firebird" "firebird-superserver" "firebird-classic" "firebird-guardian")
+	for variable_firebirdservice in "${variable_firebirdservices[@]}"; do
+        echo -e "\nParando servicos\n"
+		sudo systemctl stop $variable_firebirdservice >/dev/null 2>&1
+	done
+	
+	variable_firebirdprocesses=("firebird" "fbserver" "fbguard")
+	for variable_firebirdprocess in "${variable_firebirdprocesses[@]}"; do
+		echo -e "Parando processos"
+        sudo pkill -9 $variable_firebirdprocess >/dev/null 2>&1
+	done
+	
+	variable_firebirdpackages=("firebird*" "firebi*")
+	for variable_firebirdpackage in "${variable_firebirdpackages[@]}"; do
+		echo -e "Removendo pacotes"
+        sudo apt -y purge $variable_firebirdpackage >/dev/null 2>&1
+	done
+	
+	variable_firebirdpaths=("/etc/firebird*" "/var/lib/firebird*" "/var/log/firebird*" "/usr/lib/firebird*" "/opt/firebird*")
+	for variable_firebirdpath in "${variable_firebirdpaths[@]}"; do
+		echo -e "Removendo arquivos residuais"
+        sudo rm -rf $variable_firebirdpath >/dev/null 2>&1
+	done
+}
+
+permissioesFirebird() {
+sudo chmod -R u+s /opt/firebird 2>/dev/null
+# Lista de arquivos e diretórios
+files_folders_chown_chmod=(
+    "/opt/firebird"
+    "/opt/firebird/aliases.conf"
+    "/opt/firebird/de_DE.msg"
+    "/opt/firebird/fb_guard"
+    "/opt/firebird/fbtrace.conf"
+    "/opt/firebird/firebird.conf"
+    "/opt/firebird/firebird.log"
+    "/opt/firebird/firebird.msg"
+    "/opt/firebird/fr_FR.msg"
+    "/opt/firebird/IDPLicense.txt"
+    "/opt/firebird/IPLicense.txt"
+    "/opt/firebird/README"
+    "/opt/firebird/security2.fdb"
+    "/opt/firebird/WhatsNew"
+    "/opt/firebird/bin"
+    "/opt/firebird/doc"
+    "/opt/firebird/examples"
+    "/opt/firebird/help"
+    "/opt/firebird/include"
+    "/opt/firebird/intl"
+    "/opt/firebird/lib"
+    "/opt/firebird/misc"
+    "/opt/firebird/plugins"
+    "/opt/firebird/UDF"
+)
+
+# Aplicando chown conforme o tipo do item
+for item in "${files_folders_chown_chmod[@]}"; do
+    if [ -e "$item" ]; then
+        case "$item" in
+            "/opt/firebird/fb_guard"|"/opt/firebird/firebird.log"|"/opt/firebird/security2.fdb")
+                # Arquivos pertencentes ao usuário firebird
+                sudo chown firebird:firebird "$item" >/dev/null 2>&1
+				sudo chmod 600 "$item" >/dev/null 2>&1
+                ;;
+            "/opt/firebird/bin"|"/opt/firebird/doc"|"/opt/firebird/help"|"/opt/firebird/include"|"/opt/firebird/intl"|"/opt/firebird/lib"|"/opt/firebird/plugins"|"/opt/firebird/UDF")
+                # Diretórios que precisam de chown recursivo
+                sudo chown -R root:root "$item" >/dev/null 2>&1
+				sudo chmod -R 755 "$item" >/dev/null 2>&1
+                ;;
+            "/opt/firebird")
+                # Diretório principal sem recursão
+                sudo chown root:root "$item" >/dev/null 2>&1
+				sudo chmod 755 "$item" >/dev/null 2>&1
+                ;;
+            "/opt/firebird/de_DE.msg"|"/opt/firebird/firebird.msg"|"/opt/firebird/fr_FR.msg"|"/opt/firebird/IDPLicense.txt"|"/opt/firebird/IPLicense.txt")
+                sudo chmod 444 "$item" >/dev/null 2>&1
+                ;;
+            "/opt/firebird/examples")
+                sudo chmod -R 555 "$item" >/dev/null 2>&1
+				sudo chown -R root:root "$item" >/dev/null 2>&1
+                ;;
+            "/opt/firebird/misc")
+				sudo chown root:root "$item" >/dev/null 2>&1
+                sudo chmod -R 700 "$item" >/dev/null 2>&1
+                ;;
+			"/opt/firebird/aliases.conf"|"/opt/firebird/fbtrace.conf"|"/opt/firebird/firebird.conf"|"/opt/firebird/README"|"/opt/firebird/WhatsNew")
+                sudo chmod 644 "$item" >/dev/null 2>&1
+				;;
+            *)
+                # Arquivos normais pertencentes ao root
+                sudo chown root:root "$item" >/dev/null 2>&1
+                ;;
+        esac
+    fi
+done
+
+}
+
 menuOptions() {
     clear
 	echo -e "\n==============================="
@@ -502,7 +689,8 @@ menuOptions() {
 	echo "3. Dependencias ISL (Light Client e AlwaysOn)"
     echo "4. Instalar Firefox"
     echo "5. Instalar RustDesk"
-	echo "6. SAIR"
+    echo "6. Instalar/Reinstalar Firebird para Concentrador"
+	echo "7. SAIR"
 	read -p "Opcao: " OPTISLMENU
 
 	if [ -z "$OPTISLMENU" ] || ! [[ "$OPTISLMENU" =~ ^[0-9]+$ ]]; then
@@ -532,9 +720,12 @@ menuOptions() {
 	    rustdeskInstallReinstall
 	fi
 	if [ $OPTISLMENU -eq 6 ]; then
+	    firebirdPDVInstall
+	fi
+	if [ $OPTISLMENU -eq 7 ]; then
 	    exit
 	fi
-	if [ $OPTISLMENU -ge 7 ]; then
+	if [ $OPTISLMENU -ge 8 ]; then
 	echo -e "\nOpcao incorreta, retornando ao menu principal" ; pause ; menuOptions
 	fi
 }

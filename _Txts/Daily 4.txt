@@ -68082,176 +68082,484 @@ LINUX_INSTALL_DATE=$(ls -lct /etc | tail -1 | awk '{print $6, $7, $8}') ; echo "
 =======================================================================
 
 
-
-
-
-=======================================================================
-
-
-
+000000980	24855	204	54	2025-10-03	1	LOJA 01			t
 
 
 =======================================================================
 
 
-
+update pdv.venda set chavenfce=null where id = 24855;
 
 
 =======================================================================
 
+https://account.islonline.net/start/ISLAlwaysOn?cmdline=%22password_md5%22+%22c5d7c5561d84f6a20e59bcdccb9093be%22+%22%2fVERYSILENT%22+%22grant_silent%22+%22zeJxtUj1PxDAMVUBsTEyMHQFB1KRN2o6MSAgkkJhucRKnhMslkDR3fCz8dAoj18XD8%2fN7frJHbQ%2fJzeNtdR%2b8C1jd4bSLaX1CRmcOSdvWWmsmukE0rNfIgYNmPVPCYjtgJ1DUQjFpVVdziUbY2jQSawNgByV6NIBKQ4%2bc8VrqDsC0pm8GJmXPRSeElkywBlXNh4YZO8gBZl5rms42vG%2b%2bSSYE%2fA4%2bcgxXF9RlH%2f%2f2pAGnU1IIYdVV9fQwlwfUuLkJeQIPJuYZuR4LJAPBxApeSp6wOlutcrTTDhI%2bx5JxdXFZ%2fYcseveKNMEm5v3uCCo59B6pggTeuAXKbAXbSC0kBwsSzxiSeytIJ3Tv6BLsU17QWkxzZKrKJ0xxn7GexQPQVyh%2bYX4NHwUCjd5tlw02kDT6Bd3fRsk0pgBjWQiXMMzC2fktnH%2bRg%2fL3JB3vmajlfMH2mByRH5IBzI4%3d%22+%22ignore_system_account%22+%22grant_password_md5%22+%22c5d7c5561d84f6a20e59bcdccb9093be%22+%22description%22+%22Vale-Gas_VRMaster_Parametros%22&__ISL+Network+Start__hide_gui=1 
 
 
 
 
 =======================================================================
 
+35251008346737000172651020000002201102000827 - Gerada pelo pdv
+35250908346737000172651020000002201102034659 - Retornada pela Sefaz
+35251008346737000172651020000002209102000822 - Contingencia PDV
 
+000000220
+
+Chave de acesso:
+3525 0908 3467 3700 0172 6510 2000 0002 2011 0203 4659
+
+Chave de acesso:
+3525 1008 3467 3700 0172 6510 2000 0002 2091 0200 0822
+=======================================================================
+
+
+suporte.cliente@perto.com.br
+51-99218-8890
+51-3489-8853 - Ramal 853
+
+
+=======================================================================
+
+
+SELECT 
+    ve.*,           -- todas as colunas da vendaefetuada
+    v.*             -- todas as colunas da venda
+FROM 
+    connect.vendaefetuada ve
+JOIN 
+    pdv.venda v 
+    ON ve.id_venda = v.id
+WHERE 
+    v.data BETWEEN '2025-10-07' AND '2025-10-13'  -- ajuste o intervalo conforme necessário
+LIMIT 1;
+
+
+=======================================================================
+Melhoria - Venda subir para o VRMaster em caso de msg "Venda transmitida incorretamente"
+Ticket original: 2445997
+
+Erro nulo tabela CresceVendas para subir vendas
+Ticket original: 2448163
+
+=======================================================================
+
+
+00501101
+02.501.152/0001-01
+
+
+01501101
+12.501.837/0001-01
+· CNPJ:12501837000101
+· Número lógico:000000000076406
+
+
+=======================================================================
+
+CAS-154066-F0N1S8
+
+
+
+=======================================================================
+Pix Troco sendo declarado como DESCONTO no cupom fiscal
+Ticket: 2448656
+
+
+
+=======================================================================
+
+https://storage.googleapis.com/linux-pdv/Jeff/Teste_Bat.bat
+
+
+
+=======================================================================
+
+firebirdInstallReinstall() {
+
+echo -e "\nInstalando/Reinstalando Firebird . . .\n"
+
+echo -e "\nRemovendo Firebird . . ."
+printf '%s\n' "$PASSWD" | sudo -S -p '' apt -y purge firebi*
+echo -e "\nAplicando dependencias . . ."
+printf '%s\n' "$PASSWD" | sudo -S -p '' add-apt-repository universe
+printf '%s\n' "$PASSWD" | sudo -S -p '' apt install -y libncurses5:i386 libtommath1 libstdc++5 lib32stdc++6
+printf '%s\n' "$PASSWD" | sudo -S -p '' apt install -y libncurses5 libtommath1 libstdc++5
+printf '%s\n' "$PASSWD" | sudo -S -p '' apt -y update
+echo -e "\nCriando pasta temporaria . . ."
+printf '%s\n' "$PASSWD" | sudo -S -p '' mkdir -p -m 777 /tmp/Firebird
+echo -e "\nDownload Firebird . . ."
+printf '%s\n' "$PASSWD" | sudo -S -p '' wget --no-check-certificate https://storage.googleapis.com/linux-pdv/Jeff/LinuxFiles/firebird-2.5.zip -O /tmp/Firebird/firebird-2.5.zip
+if [ $? -ne 0 ] || [ ! -s /pdv/util/firebird-2.5.zip ]; then
+	clear ; echo "" ; echo -e "[FALHA] Erro Realizar Download Firebird" ; pause ; menuOptions
+fi
+echo -e "\Extraindo Firebird . . ."
+printf '%s\n' "$PASSWD" | sudo -S -p '' unzip -q -o /tmp/Firebird/firebird-2.5.zip -d /tmp/Firebird
+printf '%s\n' "$PASSWD" | sudo -S -p '' chmod +x -R /tmp/Firebird/firebird-2.5/FirebirdSS-2.5.9.27139-0.i686
+echo -e "\nInstalando Firebird . . ."
+cd /tmp/Firebird/firebird-2.5/FirebirdSS-2.5.9.27139-0.i686/
+sudo ./install.sh
+echo -e "\nInstall/Reinstall Firebird Finalizado"
+}
 
 
 
 =======================================================================
 
 
+powershell -Command "(New-Object Net.WebClient).DownloadFile('https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Util/Auto_Atualizador.zip', '%temp%/teste.zip')"
+
+certutil -urlcache -urlfetch -f "https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Util/Auto_Atualizador.zip" "%temp%/teste1.zip"
+
+powershell -Command "Expand-Archive -Path \"$env:TEMP\teste1.zip\" -DestinationPath \"$env:TEMP\" -Force"
+
+=======================================================================
+
+51.327.443/0001-22 | 51.327.443/0004-75
 
 
 
 =======================================================================
 
+:foundJava
+REM === Define executÃ¡veis com base na versÃ£o detectada ===
+set javaexec=%winsystem%\Java\jre1.8.0_%javacheck%\bin\java.exe
+set javawexec=%winsystem%\Java\jre1.8.0_%javacheck%\bin\javaw.exe
+set javawsexec=%winsystem%\Java\jre1.8.0_%javacheck%\bin\javaws.exe
+
+REM === Define atalhos do javapath ===
+set "commonpath=%winsystem:Program Files=Common Files%"
+set javapath_java=%commonpath%\Oracle\Java\javapath\java.exe
+set javapath_javaw=%commonpath%\Oracle\Java\javapath\javaw.exe
+set javapath_javaws=%commonpath%\Oracle\Java\javapath\javaws.exe
 
 
 
 
 =======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
+35250944008001000158650380000040489038042544	8.70	4092
+35250944008001000158650380000040481038042549
+35250944008001000158650380000040489038042544
+35250944008001000158650380000040489038042544	2025-09-02	38	994048
 
 
 
 
 =======================================================================
+set fileLink=%~1
+set destinoFileName=%~2
+set deviceName_Print=%~3
+
+
+REM #################### driversDown ####################
+:driversDown
+set fileLink=%~1
+set destinoFileName=%~2
+set deviceName_Print=%~3
+
+set driverLink=%~1
+set driverName=%~2
+set deviceName=%~3
+
+echo:
+echo Baixando %driverName% / %deviceName% ... Aguarde . . .
+
+REM Verifica se curl esta disponivel
+where curl >nul 2>&1
+if %errorlevel%==0 (
+    echo [INFO] Usando CURL para download...
+    curl -L -k "%driverLink%" -o "C:\pdv\util\%driverName%.zip" --max-time 60
+	rem  curl -L -k "%driverLink%" -o "C:\pdv\util\%driverName%.zip" --max-time 60 >nul 2>&1
+
+    REM Verifica se o arquivo foi baixado e tem tamanho > 0
+    if exist "C:\pdv\util\%driverName%.zip" (
+        for %%A in ("C:\pdv\util\%driverName%.zip") do if %%~zA gtr 0 (
+            goto driverSuccess
+        )
+    )
+
+    echo [ERRO] Falha no download com CURL.
+)
+
+REM Caso nao tenha CURL ou falhe, tenta CERTUTIL
+where certutil >nul 2>&1
+if %errorlevel%==0 (
+    REM Antes de tentar novamente, verifica se o arquivo já existe e é válido
+    if exist "C:\pdv\util\%driverName%.zip" (
+        for %%A in ("C:\pdv\util\%driverName%.zip") do if %%~zA gtr 0 (
+            goto driverSuccess
+        )
+    )
+
+    echo [INFO] Usando CERTUTIL para download...
+    certutil -urlcache -f "%driverLink%" "C:\pdv\util\%driverName%.zip"
+	rem  certutil -urlcache -urlfetch -split -f "%driverLink%" "C:\pdv\util\%driverName%.zip" >nul 2>&1
+
+    if exist "C:\pdv\util\%driverName%.zip" (
+        for %%A in ("C:\pdv\util\%driverName%.zip") do if %%~zA gtr 0 (
+            goto driverSuccess
+        )
+    )
+
+    goto driverFailed
+)
+
+:driverSuccess
+call :standardZipExtract "C:\pdv\util\%driverName%.zip" "%deviceName%" "C:\pdv\util"
+echo:
+echo Driver %driverName% / %deviceName% baixado e extraido com sucesso!
+pause
+
+del /q C:\pdv\util\%driverName%.zip >nul 2>&1
+exit /b
+
+:driverFailed
+echo Driver %driverName% / %deviceName% com falha
+pause
+exit /b
+REM #################### driversDown ####################
+
+=======================================================================
+[VRConcentrador: ON | VRAutorizador: ON]  [15:59:56] [Display] PASSE O PRODUTO7891024110201
 
 
 
+   if exist "C:\Program Files\Java" (
+   call :javaRemover
+	)
+   if exist "C:\Program Files (x86)\Java" (
+	call :javaRemover
+	)
 
 
 =======================================================================
 
 
+	0050110251437320001212230000011833
+
+ID-LOJA(3)|DATA(DDMMYY)|HORAINICIO(HHMMSS)|ID-OPERADOR(6)|ECF(3)|CUPOM(10)
+
+005|011025|143732|000121|223|0000011833
+select * from pdv.venda where numerocupom=11833 and ecf=223
+=======================================================================
+0050110251437320001212230000011833
+
+Carregando Vendas Canceladas para a
+
+SELECT
+v.id,v.numerocupom,v.DATA,
+mc.id_transacao,mc.versaopdv,mc.enviado
+FROM pdv.venda AS v 
+INNER JOIN mercafacil.cupomcancelamento AS mc ON v.id=mc.id_venda
+WHERE 1=1
+--AND mc.enviado=true
+AND v.id=3079618;
+
+select * from pdv.venda where numerocupom=11833 and ecf=223
+=======================================================================
+
+3079618	11833	2025-10-01	a9fa562c-ef45-4237-b312-f393cd0cb4da	4.3.8-107 b1	t
 
 
+0040110251717390002671330000061373
+0050110251437320001212230000011833
+0040210251041170002661320000037657
+=======================================================================
 
+005|011025|143732|000121|223|0000011833
+005|101025|191317|000265|222|0000112674
+
+select * from pdv.venda where numerocupom=112674 and ecf=222
+=======================================================================
+
+
+ID-LOJA(3)|DATA(DDMMYY)|HORAINICIO(HHMMSS)|ID-OPERADOR(6)|ECF(3)|CUPOM(10)
+
+0040110251717390002671330000061373
+0050110251437320001212230000011833
+0040210251041170002661320000037657
+
+Exemplo: 005|011025|143732|000121|223|0000011833
 =======================================================================
 
 
 
 
+0050110251437320001212230000011833
+005|011025|143732|000121|223|0000011833 
 
 =======================================================================
+005|011025|143732|000121|223|0000011833 
 
 
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
+Codigo original: 0050110251437320001212230000011833 
+Codigo limpo: 0050110251437320001212230000011833 
+ 
+=== INFORMACOES FORMATADAS === 
+ID-LOJA....: 005 
+DATA.......: 01/10/2025 
+HORA.......: 14:37:32 
+OPERADOR...: 000121 
+ECF........: 223 
+CUPOM......: 0000011833 
+ 
+=== FORMATO PADRAO === 
+005|011025|143732|000121|223|0000011833 
+ 
+=== COMANDO SQL === 
+SELECT * FROM pdv.venda WHERE ecf = 223 AND DATA= '2025-10-01' AND id_loja = 005 AND numerocupom = 0000011833 
 
 
 =======================================================================
 
+0050110251437320001212230000011833
+SELECT * FROM pdv.venda WHERE ecf = 223 AND DATA= '2025-10-01' AND id_loja = 005 AND numerocupom = 0000011833 
 
+0051010251913170002652220000112674
+SELECT * FROM pdv.venda WHERE ecf = 222 AND DATA= '2025-10-10' AND id_loja = 005 AND numerocupom = 0000112674 
 
+0051210251559280001182230000015723
+SELECT * FROM pdv.venda WHERE ecf = 223 AND DATA= '2025-10-12' AND id_loja = 005 AND numerocupom = 0000015723 
 
+0060110251734220003023010000098529
+SELECT * FROM pdv.venda WHERE ecf = 301 AND DATA= '2025-10-01' AND id_loja = 006 AND numerocupom = 0000098529
 
+0060210251141460004013060000002459
+SELECT * FROM pdv.venda WHERE ecf = 306 AND DATA= '2025-10-02' AND id_loja = 006 AND numerocupom = 0000002459 
+
+0060410250613160003023020000069549
+SELECT * FROM pdv.venda WHERE ecf = 302 AND DATA= '2025-10-04' AND id_loja = 006 AND numerocupom = 0000069549
+
+0060410251301110003023020000069698
+SELECT * FROM pdv.venda WHERE ecf = 302 AND DATA= '2025-10-04' AND id_loja = 006 AND numerocupom = 0000069698 
+
+0060710250832060003123020000070118
+SELECT * FROM pdv.venda WHERE ecf = 302 AND DATA= '2025-10-07' AND id_loja = 006 AND numerocupom = 0000070118 
+
+0061010250935480003023010000101256
+SELECT * FROM pdv.venda WHERE ecf = 301 AND DATA= '2025-10-10' AND id_loja = 006 AND numerocupom = 0000101256 
+
+0061110251651180001323010000101952
+SELECT * FROM pdv.venda WHERE ecf = 301 AND DATA= '2025-10-11' AND id_loja = 006 AND numerocupom = 0000101952 
+
+0071010250936410001474030000058546
+SELECT * FROM pdv.venda WHERE ecf = 403 AND DATA= '2025-10-10' AND id_loja = 007 AND numerocupom = 0000058546 
+
+0071110251829330003274010000084488
+SELECT * FROM pdv.venda WHERE ecf = 401 AND DATA= '2025-10-11' AND id_loja = 007 AND numerocupom = 0000084488 
+
+0080410251325210003995060000053401
+SELECT * FROM pdv.venda WHERE ecf = 506 AND DATA= '2025-10-04' AND id_loja = 008 AND numerocupom = 0000053401 
+
+0080510250907510001525070000090615
+SELECT * FROM pdv.venda WHERE ecf = 507 AND DATA= '2025-10-05' AND id_loja = 008 AND numerocupom = 0000090615 
+
+0080610251414120002865080000023256
+SELECT * FROM pdv.venda WHERE ecf = 508 AND DATA= '2025-10-06' AND id_loja = 008 AND numerocupom = 0000023256 
+
+0080610251421120002865050000058739
+SELECT * FROM pdv.venda WHERE ecf = 505 AND DATA= '2025-10-06' AND id_loja = 008 AND numerocupom = 0000058739 
+
+0080610251744530002865050000058786
+SELECT * FROM pdv.venda WHERE ecf = 505 AND DATA= '2025-10-06' AND id_loja = 008 AND numerocupom = 0000058786 
+
+0080710251539520002865030000027291
+SELECT * FROM pdv.venda WHERE ecf = 503 AND DATA= '2025-10-07' AND id_loja = 008 AND numerocupom = 0000027291 
+
+0080710251740070002865070000091466
+SELECT * FROM pdv.venda WHERE ecf = 507 AND DATA= '2025-10-07' AND id_loja = 008 AND numerocupom = 0000091466 
+
+0080810251618250002865080000023413
+SELECT * FROM pdv.venda WHERE ecf = 508 AND DATA= '2025-10-08' AND id_loja = 008 AND numerocupom = 0000023413 
+
+0080910251950330002865060000054172
+SELECT * FROM pdv.venda WHERE ecf = 506 AND DATA= '2025-10-09' AND id_loja = 008 AND numerocupom = 0000054172 
+
+0081110250712000004765070000092283
+SELECT * FROM pdv.venda WHERE ecf = 507 AND DATA= '2025-10-11' AND id_loja = 008 AND numerocupom = 0000092283 
+
+0081110250935280004765070000092342
+SELECT * FROM pdv.venda WHERE ecf = 507 AND DATA= '2025-10-11' AND id_loja = 008 AND numerocupom = 0000092342
+
+0081110251313360005225080000023629
+SELECT * FROM pdv.venda WHERE ecf = 508 AND DATA= '2025-10-11' AND id_loja = 008 AND numerocupom = 0000023629 
+
+0081110251620190005265060000054407
+SELECT * FROM pdv.venda WHERE ecf = 506 AND DATA= '2025-10-11' AND id_loja = 008 AND numerocupom = 0000054407 
+
+0081210251218380005275030000027773
+SELECT * FROM pdv.venda WHERE ecf = 503 AND DATA= '2025-10-12' AND id_loja = 008 AND numerocupom = 0000027773
 =======================================================================
 
 
 
-
-
-=======================================================================
-
-
-
-
+00842156
 
 =======================================================================
 
 
+    36.314.133/0001-80
+    36.314.133/0011-51
+    36.314.133/0003-41
+    36.314.133/0004-22
+    36.314.133/0006-94
+    36.314.133/0007-75
+    36.314.133/0008-56
+    36.314.133/0009-37
+    36.314.133/0010-70
+    36.314.133/0012-32
+    36.314.133/0013-13
+    36.314.133/0014-02
 
 
 
 =======================================================================
+Ticket: 2439001
+--## PRODUCAO
+SELECT
+v.id,v.numerocupom,v.DATA,
+STRING_AGG(
+    DISTINCT 'NFce_Venda: ' || COALESCE(
+        CASE WHEN v.chavenfce <> '' THEN TO_NUMBER(nullif(SUBSTRING(v.chavenfce, 26, 9), '')::VARCHAR, '999999999') END::VARCHAR, 
+        'N/A'
+    ) || 
+    ' | NFCe_Repo: ' || COALESCE(
+        CASE WHEN vnfce.chavenfce <> '' THEN TO_NUMBER(nullif(SUBSTRING(vnfce.chavenfce, 26, 9), '')::VARCHAR, '999999999') END::VARCHAR, 
+        'N/A'
+    ), 
+    '; '
+) AS "Detalhes_NFCe",
+v.cancelado,v.canceladoemvenda,
+vi.id_produto,vi.valortotal,vi.valorcancelado,vi.cancelado
+FROM pdv.venda AS v
+LEFT JOIN pdv.vendanfce AS vnfce ON v.id=vnfce.id_venda
+INNER JOIN pdv.vendaitem AS vi ON v.id=vi.id_venda
+WHERE 1=1
+AND vnfce.id_situacaonfce=4 AND vnfce.transmitido=FALSE AND vnfce.contingencia=TRUE
+AND v.cancelado=TRUE AND v.canceladoemvenda=FALSE
+AND vi.valorcancelado > 0 AND vi.cancelado=FALSE -- VendaCancelada e com valor > 0 (Ajuste Necessario)
+--AND vi.valorcancelado = 0 AND vi.cancelado=FALSE -- VendaCancelada e com valor = 0 (Inutilizada corretamente)
+GROUP BY v.id,v.numerocupom,v.chavenfce,vnfce.chavenfce,vi.id_produto,
+vi.valortotal,vi.valorcancelado,vi.cancelado,v.cancelado,v.canceladoemvenda,
+vnfce.id_situacaonfce,vnfce.transmitido,vnfce.contingencia;
 
+--## PRODUCAO
+UPDATE pdv.vendaitem SET valorcancelado=valortotal WHERE
+valorcancelado=0 AND cancelado=false
+AND id_venda IN 
+(SELECT id_venda FROM pdv.vendanfce WHERE
+id_situacaonfce=4 AND transmitido=FALSE AND contingencia=TRUE)
+AND id_venda IN
+(SELECT id FROM pdv.venda WHERE id_loja=X AND DATA = 'XX-XX-XX');
 
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
+UPDATE pdv.vendaitem vi
+SET valorcancelado = valortotal 
+FROM pdv.vendanfce vnfce, pdv.venda v
+WHERE vi.id_venda = vnfce.id_venda AND vi.id_venda = v.id
+  AND vi.valorcancelado = 0 AND vi.cancelado = FALSE
+  AND v.cancelado=TRUE AND v.canceladoemvenda=FALSE
+  AND vnfce.id_situacaonfce = 4 AND vnfce.transmitido = FALSE AND vnfce.contingencia = TRUE
+  AND v.id_loja=X AND v.DATA = 'XX-XX-XX';
 
 =======================================================================
 

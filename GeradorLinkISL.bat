@@ -13,7 +13,7 @@ set /p "nome=Por favor, informe o nome: "
 
 if "!nome!"=="" (
     echo.
-    echo Erro: Nome n‹o pode estar vazio!
+    echo Erro: Nome nao pode estar vazio!
     timeout /t 2 /nobreak >nul
     goto inicio
 )

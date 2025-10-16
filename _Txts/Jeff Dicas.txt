@@ -6331,13 +6331,14 @@ DROP CONSTRAINT IF EXISTS fk_id_venda;
 ALTER TABLE pdv.vendapromocaoproduto
 DROP CONSTRAINT IF EXISTS fk_id_venda;
 ALTER TABLE pdv.vendafinalizadora
-DROP CONSTRAINT IF EXISTS fk_id_venda
+DROP CONSTRAINT IF EXISTS fk_id_venda;
 commit;
 
 ==============================
 ## String index out of range: 34
 index 34
 string 34
+string index 34
 
 select * from pdv.venda where length(chavecfe) < 44 and length(chavecfe) > 0
 select * from pdv.vendacfe where length(chavecfe) < 44 and length(chavecfe) > 0
@@ -6357,6 +6358,7 @@ AND pv.data='2025-??-??'
 AND pv.id_loja=??
 ORDER BY pv.DATA desc;
 
+[USAR ESSE]
 SELECT 
 pv.chavenfce,pv.id AS id_venda,pv.ecf,pv.numerocupom,pv."data",pv.id_loja,l.descricao,
 vnfce.id AS id_repositorio,vnfce.chavenfce,pv.cancelado,
@@ -6679,78 +6681,7 @@ https://carteiradigital.vrsoft.com.br/login
 ## Ajuste Chave bases internas
 Monoloja:
 16764925000149072022tef2
-==========================================================================================
-#Reaplica permissoes Mercafacil
-view mercafacil
 
-# alterar senha de usuario mercafacil da view
-ALTER USER mercafacil WITH ENCRYPTED PASSWORD 'vr@mercafacil';
-
-GRANT ALL ON TABLE public.mercafacil_categorias_produtos TO mercafacil;
-GRANT ALL ON TABLE public.mercafacil_clientes TO mercafacil;
-GRANT ALL ON TABLE public.mercafacil_compras TO mercafacil;
-GRANT ALL ON TABLE public.mercafacil_categorias_clientes TO mercafacil;
-GRANT ALL ON TABLE public.mercafacil_compras_itens TO mercafacil;
-GRANT ALL ON TABLE public.mercafacil_devolucoes TO mercafacil;
-GRANT ALL ON TABLE public.mercafacil_devolucoes_itens TO mercafacil;
-GRANT ALL ON TABLE public.mercafacil_fornecedores TO mercafacil;
-GRANT ALL ON TABLE public.mercafacil_loja TO mercafacil;
-GRANT ALL ON TABLE public.mercafacil_produtos TO mercafacil;
-GRANT ALL ON TABLE public.mercafacil_profissionais TO mercafacil;
-GRANT ALL ON TABLE public.mercafacil_vendas TO mercafacil;
-GRANT ALL ON TABLE public.mercafacil_vendas_itens TO mercafacil;
-GRANT ALL ON TABLE public.mercafacil_vendas_pagamentos TO mercafacil;
-
-GRANT SELECT ON TABLE pdv.devolucaocupom TO mercafacil;
-GRANT SELECT ON TABLE pdv.operador TO mercafacil;
-GRANT SELECT ON TABLE pdv.venda TO mercafacil;
-GRANT SELECT ON TABLE pdv.vendaitem TO mercafacil;
-GRANT SELECT ON TABLE pdv.vendafinalizadora TO mercafacil;
-GRANT SELECT ON TABLE pdv.finalizadora TO mercafacil;
-GRANT SELECT ON TABLE pdv.devolucaocupom TO mercafacil;
-GRANT SELECT ON TABLE pdv.devolucaocupomitem TO mercafacil;
-GRANT SELECT ON TABLE public.loja TO mercafacil;
-
-GRANT ALL ON TABLE public.clientepreferencial TO mercafacil;
-GRANT ALL ON TABLE public.clientepreferencialtipoclubevantagem TO mercafacil;
-GRANT ALL ON TABLE public.clientepreferencialtipoclubevantagem_id_seq TO mercafacil;
-GRANT ALL ON TABLE mercafacil_clientes  TO mercafacil;
-GRANT ALL ON TABLE public.mercafacil_vendas_pagamentos TO mercafacil;
-GRANT ALL ON TABLE public.mercafacil_clientes_eventuais  TO mercafacil;
-GRANT ALL ON TABLE public.mercafacil_categorias_clientes  TO mercafacil;
-==========================================================================================
-public.mercafacil_categorias_produtos
-public.mercafacil_clientes
-public.mercafacil_compras
-public.mercafacil_categorias_clientes
-public.mercafacil_compras_itens
-public.mercafacil_devolucoes
-public.mercafacil_devolucoes_itens
-public.mercafacil_fornecedores
-public.mercafacil_loja
-public.mercafacil_produtos
-public.mercafacil_profissionais
-public.mercafacil_vendas
-public.mercafacil_vendas_itens
-public.mercafacil_vendas_pagamentos
-
-pdv.devolucaocupom
-pdv.operador
-pdv.venda
-pdv.vendaitem
-pdv.vendafinalizadora
-pdv.finalizadora
-pdv.devolucaocupom
-pdv.devolucaocupomitem
-public.loja
-
-public.clientepreferencial
-public.clientepreferencialtipoclubevantagem
-public.clientepreferencialtipoclubevantagem_id_seq
-mercafacil_clientes 
-public.mercafacil_vendas_pagamentos
-public.mercafacil_clientes_eventuais 
-public.mercafacil_categorias_clientes 
 ==========================================================================================
 ## Properties / comandos concentrador vr.properties
 nfce.contingenciaoffline=true
@@ -6794,60 +6725,6 @@ rabbitmq.username=vr
 rabbitmq.password=vr!RbtMQ
 ==============================
 
-## Comandos Mercafacil
-
-# Reenvia vendas (todas) baseado em uma qtdade especifica
--vendapdv
-gerenciadormercafacil.limiteregistrosvenda=XXX
-"-vendapdv comando que ativa o envio das vendas para a Mercafacil (Leva em consideração as vendas da tabela pdv.venda e não da tabela mercafacil.vendaefetuada. Esse parâmetro também considera a linha gerenciadormercafacil.limiteregistrosvenda do vr.properties). Esse parâmetro só será utilizado em casos muito específicos, quando o cliente quiser enviar vendas dos últimos X dias para a Mercafacil mesmo que elas não tenham desconto Mercafacil."
-"Limite de Registros Exportacao Venda -> Quantidade de registros de venda que serão enviados por vez a MercaFacil a fim de nao causar travamentos na base. Por padrão esse valor é 1000 e pode ser alterado atraves do vr.properties com a linha gerenciadormercafacil.limiteregistrosvenda."
-
-# 
-(4.1)
-VRPdv_3.23.26-3
-VRConcentrador_3.23.18-13
-VRGerenciadorMercaFacil_4.1.1-5
-Caso cliente precise atualizar, ele precisa informar a tarefa (PDV-2468 | PDV-2469) para autorização.
-
-(4.0)
-VRPdv_3.22.11-101
-VRConcentrador_3.22.11-32
-VRGerenciadorMercaFacil_4.0.11-9
-Caso cliente precise atualizar, ele precisa informar a tarefa (PDV-2468 | PDV-2469) para autorização.
-
-# Exemplos de json
-# json de consulta de cliente
-Consulta cliente MercaFacil, Comando: 110|52726336019|3.23.26-3, Retorno: 110|200|{"loyalty":true,"user":{"person_type":"N","name":"Cliente de Teste","birth_date":"1958-03-10","document_no":"52726336019"},"transaction_id":"0a7f8f92-aa9e-4977-8624-e5a880a23fa1","message":{},"requestId":"0a7f8f92-aa9e-4977-8624-e5a880a23fa1","datetime":"2023-02-17 14:41:48"}, Consulta: Cliente MercaFacil
-
-# json de retorno confirmando o desconto
-Consulta Desconto MercaFacil, Comando: 109|{"client_id":"52726336019","items":[{"sku":"20018","ean":"7896076000388","quantity":1.0,"total_value":6.99}],"transaction_id":"0a7f8f92-aa9e-4977-8624-e5a880a23fa1","origin":"pdv"}|3.23.26-3, Retorno: 109|200|{"loyalty":true,"items":[{"sale":"63ef76d479e16ca1d27582a9","sku":"20018","ean":"7896076000388","quantity":1.0,"discount_value":0.99,"total_value_without_discount":6.99,"total_value_with_discount":6.0,"consumed_quantity":0}],"absolute":{"sale":"","discount_value":0.0}}, Consulta: Desconto MercaFacil
-
-## Select para identificar itens passiveis de serem enviados para mercafacil
-select
-    count (*)
-from
-    produto as p
-inner join produtocomplemento as pc on
-    pc.id_produto = p.id
-inner join tipoembalagem as te on
-    te.id = p.id_tipoembalagem
-inner join mercadologico m on
-    m.mercadologico1 = p.mercadologico1
-    and m.nivel = 1
-inner join mercadologico m2 on
-    m2.mercadologico1 = p.mercadologico1
-    and m2.mercadologico2 = p.mercadologico2
-    and m2.nivel = 2
-inner join mercadologico m3 on
-    m3.mercadologico1 = p.mercadologico1
-    and m3.mercadologico2 = p.mercadologico2
-    and m3.mercadologico3 = p.mercadologico3
-    and m3.nivel = 3
-where
-    pc.id_situacaocadastro = 1
-    and pc.id_loja = 1;
-
-==============================
 echo Start VRGerenciadorSmarket
 
 echo %date%
@@ -7596,6 +7473,7 @@ FROM ChavesMercafacil_tmp;
 
 
 ## Identifca venda mercafacil
+estrutura cupom mercafacil coupon
 
 0010405251021070007611120000050651 
 ID-LOJA(3)|DATA(DDMMYY)|HORAINICIO(HHMMSS)|ID-OPERADOR(6)|ECF(3)|CUPOM(10)
@@ -7996,6 +7874,7 @@ update fornecedor set cnpj='53141073000160' where id=1;
 C:\vr\jdk-11.0.19\bin\java.exe -jar -Dfile.encoding=UTF-8 C:\vr\exec\VRGerenciadorMercaFacil.jar -log
 REM C:\vr\jdk-11.0.19\bin\java.exe -jar -Dfile.encoding=UTF-8 C:\vr\exec\VRGerenciadorMercaFacil.jar -log -config
 
+## Configurar properties com as infos abaixo
 #######################################################
 gerenciadormercafacil.diasretroativos = 5
 gerenciadormercafacil.limiteregistrosvenda = 100
@@ -11133,7 +11012,7 @@ Convenios Card - Antiga OrgCard / Atual Cardse-REDE USE
 Banrisul - Modulo Vero
 Master Plus MPLUS - FoxWinCard - porta 22547
 BigCard - Siscred
-FamilyCard - FoxWinCard
+FamilyCard - FoxWinCard - CardSE
 OmniCard - BIZ
 REDE USE - cardSE
 ValeCon - Valecon
@@ -11668,6 +11547,20 @@ sudo chmod +x /pdv/util/firebird-2.5/FirebirdSS-2.5.9.27139-0.i686/install.sh
 sudo chmod +x -R /pdv/util/FirebirdSS-2.5.9.27139-0.i686/*
 sudo chmod +x -R /pdv/util/firebird-2.5/FirebirdSS-2.5.9.27139-0.i686/*
 cd /pdv/util/firebird-2.5/FirebirdSS-2.5.9.27139-0.i686/
+sudo ./install.sh
+
+
+## Firebird servidor
+sudo apt -y purge firebi*
+sudo add-apt-repository universe
+sudo apt install -y libncurses5:i386 libtommath1 libstdc++5 lib32stdc++6
+sudo apt install -y libncurses5 libtommath1 libstdc++5
+sudo apt -y update
+sudo mkdir -p -m 777 /tmp/Firebird
+sudo wget --no-check-certificate https://storage.googleapis.com/linux-pdv/Jeff/LinuxFiles/firebird-2.5.zip -O /tmp/Firebird/firebird-2.5.zip
+sudo unzip -q -o /tmp/Firebird/firebird-2.5.zip -d /tmp/Firebird
+sudo chmod +x -R /tmp/Firebird/firebird-2.5/FirebirdSS-2.5.9.27139-0.i686
+cd /tmp/Firebird/firebird-2.5/FirebirdSS-2.5.9.27139-0.i686/
 sudo ./install.sh
 
 ===============================================

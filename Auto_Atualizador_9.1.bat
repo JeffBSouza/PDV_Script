@@ -1,16 +1,14 @@
 @echo off
 setlocal enabledelayedexpansion
 REM chcp 65001
-
+set "DIR_ATUAL=%~dp0"
+set "FILES_FOLDER=%DIR_ATUAL%\FILES_AutoAtualizador"
 
 REM https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Util/Auto_Atualizador.zip
 
-REM ----------- SCRIPT VRS 9.0 ------------
-REM 
-
-
-set version=9.0
-set "dllsitef_vrs=7.0.117.108.r1"
+REM ----------- SCRIPT VRS 9.2 ------------
+set version=9.2
+set "dllsitef_vrs=7.0.117.109.r1"
 
 REM -- Inicia Menu
 goto menu
@@ -47,25 +45,12 @@ if "%PROCESSOR_ARCHITECTURE%"=="AMD64" (
     set winx=x86
     exit /b
 )
-REM #################### validaVersoesWindows ####################
-
-REM #################### validaStartPath ####################
-:validaStartPath
-REM ------------ check folder path ------------
-if not exist c:\pdv\util\Programs (
-	echo:
-	echo PASTA E BAT FORA DO CAMINHO PADRAO c:\pdv\util, COPIAR PARA PASTA PADRAO.
-	mkdir "c:\pdv\util" >nul 2>&1
-	pause
-	exit
-)
 exit /b
-REM #################### validaStartPath ####################
+REM #################### validaVersoesWindows ####################
 
 REM #################### setGlobalVariaveis ####################
 :setGlobalVariaveis
 set AND=IF
-set wget="c:\pdv\util\Programs\wget\wget.exe"
 
 REM ----------- JAVA Variaveis ---------------
 SET holdjavainstall=msg/time:60 * "JAVA SERA INSTALADO, AGUARDE A MENSAGEM DE "JAVA INSTALADO""
@@ -92,15 +77,6 @@ REM ----------- NOTEPAD++ Variaveis ---------------
 set notepad="https://storage.googleapis.com/linux-pdv/Jeff/Ninite_Notepad_Installer.exe"
 REM ----------- NOTEPAD++ Variaveis ---------------
 
-REM ----------- GSURF Variaveis ---------------
-SET certificadogsurf="https://gsurf.com.br/lib/win/certificado.zip"
-SET clientgsurf="https://gsurf.com.br/lib/win/gsclient.zip"
-SET errodowncertificadogsurf=msg/time:240 * "ERRO DOWNLOAD CERTIFICADO GSURF, RETORNANDO MENU PRINCIPAL"
-SET erroextractcertificadogsurf=msg/time:240 * "ERRO EXTRAIR CERTIFICADO GSURF, RETORNANDO MENU PRINCIPAL"
-SET errodownclientegsurf=msg/time:240 * "ERRO DOWNLOAD Client GSURF, RETORNANDO MENU PRINCIPAL"
-SET erroextractclientegsurf=msg/time:240 * "ERRO EXTRAIR Client GSURF, RETORNANDO MENU PRINCIPAL"
-REM ----------- GSURF Variaveis ---------------
-
 REM ----------- NetFrame Variaveis ---------------
 set installnetframe=msg/time:120 * "INSTALANDO NETFramework, AGUARDE FINALIZACAO"
 SET netframeinstallerror=msg/time:240 * "ERRO AO INSTALAR NETFramework"
@@ -118,9 +94,12 @@ REM ----------- Firebird Variaveis ---------------
 set firebirdlink="https://storage.googleapis.com/linux-pdv/Jeff/Firebird-2.5.2.26540_0_Win32.exe"
 REM ----------- Firebird Variaveis ---------------
 
+set fbrecovery="https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Util/SetupFBRecovery.exe"
+set rustdesk="https://github.com/rustdesk/rustdesk/releases/download/1.4.2/rustdesk-1.4.2-x86_64.exe"
+
 call :datetime
-set bkpOldDlls32="c:\pdv\util\DllsSitefBKP\BKP_System32\BKP_%dateTime%"
-set bkpOldDlls64="c:\pdv\util\DllsSitefBKP\BKP_SysWOW64\BKP_%dateTime%"
+set bkpOldDlls32="%FILES_FOLDER%\DllsSitefBKP\BKP_System32\BKP_%dateTime%"
+set bkpOldDlls64="%FILES_FOLDER%\DllsSitefBKP\BKP_SysWOW64\BKP_%dateTime%"
 exit /b
 REM #################### setGlobalVariaveis ####################
 
@@ -156,7 +135,14 @@ set javawexec=%winsystem%\Java\jre1.8.0_%javacheck%\bin\javaw.exe
 set javawsexec=%winsystem%\Java\jre1.8.0_%javacheck%\bin\javaws.exe
 
 REM === Define atalhos do javapath ===
-set "commonpath=%winsystem:Program Files=Common Files%"
+if exist "%ProgramFiles%\Common Files" (
+    set "commonpath=%ProgramFiles%\Common Files"
+) else (
+    if exist "%ProgramFiles(x86)%\Common Files" (
+        set "commonpath=%ProgramFiles(x86)%\Common Files"
+    )
+)
+
 set javapath_java=%commonpath%\Oracle\Java\javapath\java.exe
 set javapath_javaw=%commonpath%\Oracle\Java\javapath\javaw.exe
 set javapath_javaws=%commonpath%\Oracle\Java\javapath\javaws.exe
@@ -182,7 +168,6 @@ REM #################### menu ####################
 :menu
 call :limpezaFoldersFiles &
 call :validaVersoesWindows &
-call :validaStartPath &
 call :setGlobalVariaveis &
 call :checkJavaVersion &
 
@@ -193,6 +178,9 @@ color 80  &:: Fundo Cinza, Letras Pretas
 REM color 0C  &:: Fundo preto, texto vermelho claro (mais vibrante)
 REM color 0E  &:: Fundo preto, texto amarelo claro (mais legÃ­vel)
 REM color 6F  &:: Fundo amarelo escuro, letra branca (simula laranja)
+
+
+mkdir %FILES_FOLDER% >nul 2>&1
 
 time /t        date /t
 echo:
@@ -209,15 +197,17 @@ echo * 3. Permissoes Pasta PDV e VR
 echo * 4. Copiando Driver/Sat para System32 / SysWoW64
 echo * -------------------------------------
 echo * 5. JAVA Submenus
-echo * 6. VPN Sitef / Gsurf Submenus
+echo * 6. VPN Sitef - TLS
 echo * 7. Firebird Instalar / Reinstalar
 echo * 8. Drivers Submenus
 echo * -------------------------------------
 echo * 9. Sharing pasta PRINTERS - Printer Shared
 echo * 10. Notepad++
-echo * 11. Banco_PDV
+echo * 11. FB Recovery
+echo * 12. RustDesk
+echo * 13. Banco_PDV
 echo * -------------------------------------
-echo * 12. CheckList PDV
+echo * 14. CheckList PDV
 echo =====================================
 echo Version: %version%
 
@@ -225,23 +215,25 @@ set /p opcao= Escolha uma opcao:
 echo ------------------------------
 if %opcao% equ 1 cls & exit
 if %opcao% equ 2 cls & call :menudllsitef & goto menu
-if %opcao% equ 3 cls & call :permissoesdriversat & pause & goto menu
+if %opcao% equ 3 cls & call :permissoes & pause & goto menu
 if %opcao% equ 4 cls & call :copiardlls & pause & goto menu
 if %opcao% equ 5 cls & goto menujava
-if %opcao% equ 6 cls & goto menuvpnsitefgsurf
-if %opcao% equ 7 call :firebirdInstallReinstall & pause & goto menu
+if %opcao% equ 6 cls & call :installVPNSitef
+if %opcao% equ 7 cls & call :firebirdInstallReinstall & pause & goto menu
 if %opcao% equ 8 cls & goto menudrivers
 if %opcao% equ 9 cls & call :shareprinters & pause & goto menu
 if %opcao% equ 10 cls & call :notepad & goto menu
-if %opcao% equ 11 goto opcao11
-if %opcao% equ 12 goto checklistPdvMenu
-if %opcao% GEQ 13 call :opcaoinexistente menu
+if %opcao% equ 11 cls & call :fbrecovery & goto menu
+if %opcao% equ 12 cls & call :rustdesk & goto menu
+if %opcao% equ 13 goto opcao12
+if %opcao% equ 14 goto checklistPdvMenu
+if %opcao% GEQ 15 call :opcaoinexistente menu
 if %opcao% EQU 0 call :opcaoinexistente menu
 REM =========== MAIN MENU ================
 
-:opcao11
+:opcao12
 cls
-cd c:\pdv\util\Programs >nul 2>&1
+cd %FILES_FOLDER%\Programs >nul 2>&1
 start Banco_PDV.bat >nul 2>&1
 goto menu
 REM #################### menu ####################
@@ -292,15 +284,19 @@ REM #################### checklistPdvMenu ####################
 
 REM #################### checklistPDV ####################
 :checklistPDV
+cls
 call :atualizarDllSitef "DllSitef_Atual"
 echo:
 call :copiardlls
 echo:
+cls
 call :firebirdInstallReinstall
 echo:
+cls
 call :updateJavaVRS "%java301link%" 301
 echo:
-call :permissoesdriversat
+cls
+call :permissoes "%FILES_FOLDER%\DriverSAT.zip"
 cls
 echo:
 echo ============================
@@ -376,80 +372,10 @@ if %opcaoJavavrs% EQU 0 call :opcaoinexistente javaVersions
 
 REM #################### javaVersions ####################
 
-REM #################### validavpnsitefgsurf ####################
-:validavpnsitefgsurf
-set vpnmodelo=0
-
-rem -----------------------------------
-set "serviceName=GSurfRSA Listener"
-set "serviceStatus="
-
-if exist C:\Windows\SysWOW64\CONFITLS.ini (
-  set vpnmodelo=1
-  goto validavpnsitefgsurf2
-)
-if exist C:\Windows\System32\CONFITLS.ini (
-  set vpnmodelo=1
-  goto validavpnsitefgsurf2
-)
-rem -----------------------------------
-rem -----------------------------------
-for /f "tokens=3 delims=: " %%H in ('sc query "%serviceName%" ^| findstr "STATE"') do (
-    set "serviceStatus=%%H"
-)
-if %errorlevel% EQU 0 (
-	for /f "tokens=3 delims=: " %%H in ('sc query "%serviceName%" ^| findstr "ESTADO"') do (
-		set "serviceStatus=%%H"
-	)
-)
-if /i "%serviceStatus%" equ "RUNNING" (
-    set vpnmodelo=2
-) else (
-    set vpnmodelo=2
-)
-exit /b
-REM #################### validavpnsitefgsurf ####################
-REM #################### validavpnsitefgsurf2 ####################
-:validavpnsitefgsurf2
-if %vpnmodelo% equ 0 set vpnmodeloprint=Nenhum
-if %vpnmodelo% equ 1 set vpnmodeloprint=VPN Sitef Express
-if %vpnmodelo% equ 2 set vpnmodeloprint=Gsurf
-exit /b
-REM #################### validavpnsitefgsurf2 ####################
-
-REM #################### menuvpnsitefgsurf ####################
-:menuvpnsitefgsurf
-call :validavpnsitefgsurf
-call :validavpnsitefgsurf2
-
-cls
-time /t        date /t
-echo:
-echo Windows %winvrs% %winx%
-echo Computador: %computername%        Usuario: %username%
-echo:
-echo ====================================
-echo            MENU VPN
-echo Modelo VPN Ativo: %vpnmodeloprint%
-echo ====================================
-echo * 1. SAIR
-echo * 2. GSURF
-echo * 3. VPN Sitef (TLS)
-echo * 4. Retornar Menu Principal
-echo ====================================
-
-set /p opcaoVPN= Escolha uma opcao: 
-echo ------------------------------
-if %opcaoVPN% equ 1 cls & exit
-if %opcaoVPN% equ 2 goto menugsurf
-if %opcaoVPN% equ 3 cls & call :installVPNSitef
-if %opcaoVPN% equ 4 goto menu
-if %opcaoVPN% GEQ 5 call :opcaoinexistente menuvpnsitefgsurf
-if %opcaoVPN% EQU 0 call :opcaoinexistente menuvpnsitefgsurf
-REM #################### menuvpnsitefgsurf ####################
-
 REM #################### installVPNSitef ####################
 :installVPNSitef
+set "vpnmodeloprint=VPN Sitef Express"
+
 cls
 echo:
 echo Instalando/Reinstalando TLS Sitef Express
@@ -461,7 +387,8 @@ del /q "%SitefFolder%\*.*" >nul 2>&1
 for /d %%x in ("%SitefFolder%\*") do rmdir /s /q "%%x" >nul 2>&1
 )
 
-del /q "c:\pdv\util\CONFITLS.ini" >nul 2>&1
+del /q "%FILES_FOLDER%\CONFITLS.ini" >nul 2>&1
+del /q "C:\pdv\util\CONFITLS.ini" >nul 2>&1
 
 REM -- Define variavel %dateTime%
 call :datetime
@@ -469,11 +396,15 @@ call :datetime
 if exist C:\Windows\SysWOW64\CONFITLS.ini (
 echo Deletando C:\Windows\SysWOW64\CONFITLS.ini
 echo:
-del /q "c:\pdv\util\CONFITLS.ini" >nul 2>&1
+del /q "C:\Windows\SysWOW64\CONFITLS.ini" >nul 2>&1
 )
 if exist C:\Windows\System32\CONFITLS.ini (
-mkdir C:\pdv\util\BKP_VPN_CONFITLS >nul 2>&1
-move "C:\Windows\System32\CONFITLS.ini" "C:\pdv\util\BKP_VPN_CONFITLS\CONFITLS_%dateTime%.ini"
+echo Deletando C:\Windows\System32\CONFITLS.ini
+del /q "C:\Windows\System32\CONFITLS.ini" >nul 2>&1
+)
+if exist C:\VRPdv\libs\CONFITLS.ini (
+echo Deletando C:\VRPdv\libs\CONFITLS.ini
+del /q "C:\VRPdv\libs\CONFITLS.ini" >nul 2>&1
 )
 
 echo Cliente utiliza Proxy ?
@@ -495,23 +426,23 @@ set /p portaproxy= PORTA proxy:
 echo Informe o Token VPN Sitef Express
 set /p tokenVPNSitef= Insira o Token: 
 
-echo [ConfiguracaoTLS] >> c:\pdv\util\CONFITLS.ini
-echo TipoComunicacaoExterna=TLSGWP >> c:\pdv\util\CONFITLS.ini
-echo URLTLS=tls-prod.fiservapp.com >> c:\pdv\util\CONFITLS.ini
-echo GwpTipoProxy=http >> c:\pdv\util\CONFITLS.ini
-echo GwpEnderecoProxy=%ipproxy%:%portaproxy% >> c:\pdv\util\CONFITLS.ini
+echo [ConfiguracaoTLS] >> %TEMP%\CONFITLS.ini
+echo TipoComunicacaoExterna=TLSGWP >> %TEMP%\CONFITLS.ini
+echo URLTLS=tls-prod.fiservapp.com >> %TEMP%\CONFITLS.ini
+echo GwpTipoProxy=http >> %TEMP%\CONFITLS.ini
+echo GwpEnderecoProxy=%ipproxy%:%portaproxy% >> %TEMP%\CONFITLS.ini
 REM GwpEnderecoProxy= 127.0.0.1:1234
-echo TokenRegistro=%tokenVPNSitef% >> c:\pdv\util\CONFITLS.ini
+echo TokenRegistro=%tokenVPNSitef% >> %TEMP%\CONFITLS.ini
 goto vpnsitefcontinue
 
 :opcaoproxy2
 echo Informe o Token VPN Sitef Express
 set /p tokenVPNSitef= Insira o Token: 
 
-echo [ConfiguracaoTLS] >> c:\pdv\util\CONFITLS.ini
-echo TipoComunicacaoExterna=TLSGWP >> c:\pdv\util\CONFITLS.ini
-echo URLTLS=tls-prod.fiservapp.com >> c:\pdv\util\CONFITLS.ini
-echo TokenRegistro=%tokenVPNSitef% >> c:\pdv\util\CONFITLS.ini
+echo [ConfiguracaoTLS] >> %TEMP%\CONFITLS.ini
+echo TipoComunicacaoExterna=TLSGWP >> %TEMP%\CONFITLS.ini
+echo URLTLS=tls-prod.fiservapp.com >> %TEMP%\CONFITLS.ini
+echo TokenRegistro=%tokenVPNSitef% >> %TEMP%\CONFITLS.ini
 goto vpnsitefcontinue
 
 :vpnsitefcontinue
@@ -520,9 +451,9 @@ if exist C:\gsurfssl (
     net stop "GSurfRSA Listener" >nul 2>&1
     sc config "GSurfRSA Listener" start= Disabled >nul 2>&1
 	ren "C:\gsurfssl" "Gsurfssl-Desativada_TLS-Ativada"
-    echo GSURF_Desativada_%dateTime% >> c:\pdv\util\GSURF_Desativada_%dateTime%.txt
-    echo GSURF_Desativada_%dateTime% >> c:\pdv\util\GSURF_Desativada_%dateTime%.txt
-    echo GSURF_Desativada_%dateTime% >> c:\pdv\util\TLS_Ativada_%dateTime%.txt
+    echo GSURF_Desativada_%dateTime% >> %TEMP%\GSURF_Desativada_%dateTime%.txt
+    echo GSURF_Desativada_%dateTime% >> %TEMP%\GSURF_Desativada_%dateTime%.txt
+    echo GSURF_Desativada_%dateTime% >> %TEMP%\TLS_Ativada_%dateTime%.txt
 )
 
 call :UpdateOrAddTokenTLS "C:\vr\vr.properties" "%tokenVPNSitef%"
@@ -552,19 +483,25 @@ rem Substitui o arquivo original pelo temporÃ¡rio
 move /y "%file%.tmp" "%file%" >nul
 REM #################### UpdateOrAddTokenTLS ####################
 
-cacls c:\pdv\util\CONFITLS.ini /E /T /C /P Todos:F REDE:F >nul 2>&1
+cacls %TEMP%\CONFITLS.ini /E /T /C /P Todos:F REDE:F >nul 2>&1
 
 set CONFITLS=0
 if "%winx%"=="x64" (
-  copy c:\pdv\util\CONFITLS.ini C:\Windows\SysWOW64\ /Y >nul 2>&1
+  copy %TEMP%\CONFITLS.ini C:\Windows\SysWOW64\ /Y >nul 2>&1
   cacls C:\Windows\SysWOW64\CONFITLS.ini /E /T /C /P Todos:F REDE:F >nul 2>&1
-  del /q c:\pdv\util\CONFITLS.ini >nul 2>&1
+  del /q %TEMP%\CONFITLS.ini >nul 2>&1
   set CONFITLS=64
 ) else (
-  copy c:\pdv\util\CONFITLS.ini C:\Windows\System32\ /Y >nul 2>&1
+  copy %TEMP%\CONFITLS.ini C:\Windows\System32\ /Y >nul 2>&1
   cacls C:\Windows\System32\CONFITLS.ini /E /T /C /P Todos:F REDE:F >nul 2>&1
-  del /q c:\pdv\util\CONFITLS.ini >nul 2>&1
+  del /q %TEMP%\CONFITLS.ini >nul 2>&1
   set CONFITLS=32
+)
+if exist C:\VRPdv\libs\CONFITLS.ini (
+  copy %TEMP%\CONFITLS.ini C:\VRPdv\libs /Y >nul 2>&1
+  cacls C:\VRPdv\libs\CONFITLS.ini /E /T /C /P Todos:F REDE:F >nul 2>&1
+  del /q %TEMP%\CONFITLS.ini >nul 2>&1
+  set CONFITLS=16
 )
 
 if %CONFITLS% neq 0 (
@@ -575,6 +512,10 @@ if %CONFITLS% neq 0 (
 	if %CONFITLS% equ 32 (
 	echo:
 	echo Arquivo CONFITLS.ini configurado com sucesso em C:\Windows\System32
+	)
+	if %CONFITLS% equ 16 (
+	echo:
+	echo Arquivo CONFITLS.ini configurado com sucesso em C:\VRPdv\libs
 	)
 ) else (
     echo:
@@ -599,53 +540,6 @@ echo ============================
 pause
 goto menu
 REM #################### installVPNSitef ####################
-
-REM #################### desativarvpnsitef ####################
-:desativarvpnsitef
-set data=%date:~6,4%_%date:~3,2%_%date:~0,2%
-set hora=%time:~0,2%-%time:~3,2%
-set dateTime=%data%_%hora%
-if exist C:\Windows\SysWOW64\CONFITLS.ini (
-  del /q C:\Windows\SysWOW64\CONFITLS.ini >nul 2>&1
-  echo VPN_TLS_Desativada_%dateTime% >> c:\pdv\VPN_TLS_Desativada_%dateTime%.txt
-  echo VPN_TLS_Desativada_%dateTime% >> c:\VPN_TLS_Desativada_%dateTime%.txt
-  echo VPN_TLS_Desativada_%dateTime% >> c:\Gsurf_Ativada_%dateTime%.txt
-)
-if exist C:\Windows\System32\CONFITLS.ini (
-  del /q C:\Windows\SysWOW64\CONFITLS.ini >nul 2>&1
-  echo VPN_TLS_Desativada_%dateTime% >> c:\pdv\VPN_TLS_Desativada_%dateTime%.txt
-  echo VPN_TLS_Desativada_%dateTime% >> c:\VPN_TLS_Desativada_%dateTime%.txt
-  echo VPN_TLS_Desativada_%dateTime% >> c:\Gsurf_Ativada_%dateTime%.txt
-)
-exit /b
-REM #################### desativarvpnsitef ####################
-
-REM #################### menugsurf ####################
-:menugsurf
-cls
-time /t        date /t
-echo:
-echo Windows %winvrs% %winx%
-echo Computador: %computername%        Usuario: %username%
-echo:
-echo ====================================
-echo            MENU GSURF
-echo ====================================
-echo * 1. SAIR
-echo * 2. Gsurf - Completo
-echo * 3. Gsurf Express APENAS
-echo * 4. Retornar Menu Principal
-echo ====================================
-
-set /p opcaoGsurf= Escolha uma opcao: 
-echo ------------------------------
-if %opcaoGsurf% equ 1 cls & exit
-if %opcaoGsurf% equ 2 call :desativarvpnsitef & call :gsurfFullInstall & goto menu
-if %opcaoGsurf% equ 3 call :desativarvpnsitef & call :gsurfFilesOnly & goto menu
-if %opcaoGsurf% equ 4 goto menu
-if %opcaoGsurf% GEQ 5 call :opcaoinexistente menugsurf
-if %opcaoGsurf% EQU 0 call :opcaoinexistente menugsurf
-REM #################### menugsurf ####################
 
 REM #################### validastatusfirebird ####################
 :validastatusfirebird
@@ -690,14 +584,8 @@ exit /b
 echo:
 echo Realizando Download Firebird-2.5.2.26540_0_Win32, Aguarde . . .
 
-if not exist C:\pdv\util\Firebird-2.5.2.26540_0_Win32.exe (
-	%wget% --no-check-certificate %firebirdlink% -O C:\pdv\util\Firebird-2.5.2.26540_0_Win32.exe >nul 2>&1
-		if not exist C:\pdv\util\Firebird-2.5.2.26540_0_Win32.exe (
-		echo:
-		echo Arquivo Firebird-2.5.2.26540_0_Win32.exe nao encontrado, verifique e faca o processo manual
-		pause
-		goto menu
-	)
+if not exist %FILES_FOLDER%\Firebird-2.5.2.26540_0_Win32.exe (
+	call :standardFileDown %firebirdlink% "%FILES_FOLDER%\Firebird-2.5.2.26540_0_Win32.exe" "Firebird"
 )
 exit /b
 
@@ -722,10 +610,10 @@ if exist "%PROGRAMFILES(X86)%\Firebird" (
 )
 
 :firebirdInstall
-if exist C:\pdv\util\Firebird-2.5.2.26540_0_Win32.exe (
+if exist %FILES_FOLDER%\Firebird-2.5.2.26540_0_Win32.exe (
 	echo:
 	echo Instalando Firebird-2.5.2.26540_0_Win32...Aguarde . . .
-	cd /d C:\pdv\util
+	cd /d %FILES_FOLDER%
 	start "" /WAIT Firebird-2.5.2.26540_0_Win32.exe /SILENT
 		if %errorlevel% neq 0 (
 			cls
@@ -772,8 +660,12 @@ rem ---- LINKS TECLADO -----
 set tecladogertec="https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Teclado/Gertec_Tec44_Tec55_PS2Geral.zip"
 set tecladosmak="https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Teclado/SMAK_Package.zip"
 rem ---- LINKS TECLADO -----
+rem ---- LINKS BIOMETRIA -----
+set biometria_hamsterdx="https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Biometria/HamsterDX_Win.zip"
+set biometria_controlid_idbio="https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Biometria/ControlID_IDBio.zip"
+set biometria_futronic="https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Biometria/Futronic_Package.zip"
+rem ---- LINKS BIOMETRIA -----
 rem ---- LINKS UTEIS -----
-set biometria_hamsterdx_win="https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Biometria/Hamster_Win.zip"
 rem ---- LINKS UTEIS -----
 
 cls
@@ -790,7 +682,7 @@ echo * 2. Impressora
 echo * 3. SAT
 echo * 4. Teclado
 echo * 5. Pinpad
-echo * 6. Util
+echo * 6. Biometria
 echo * 7. MENU JAVA
 echo * 8. Retornar Menu Principal
 echo =============================
@@ -802,7 +694,7 @@ if %opcaoJava% equ 2 goto menuimpressora & goto menu
 if %opcaoJava% equ 3 goto menusat & goto menu
 if %opcaoJava% equ 4 goto menuteclado & goto menu
 if %opcaoJava% equ 5 goto menupinpad & goto menu
-if %opcaoJava% equ 6 goto menuutil & goto menu
+if %opcaoJava% equ 6 goto menubiometria & goto menu
 if %opcaoJava% equ 7 goto menujava & goto menu
 if %opcaoJava% equ 8 goto menu
 if %opcaoJava% GEQ 9 call :opcaoinexistente menu
@@ -823,17 +715,19 @@ echo * 6. Tanca TP 650
 echo * 7. Voltar Menu Drivers
 echo * 8. Voltar Menu Principal
 set /p opcaoImpressora= Escolha uma opcao: 
-if %opcaoImpressora% equ 1 call :driversDown "%bema4200%" DriverImpressora "Bematech 4200 th" & goto menu
-if %opcaoImpressora% equ 2 call :driversDown "%bema4200hs%" DriverImpressora "Bematech 4200 HS" & goto menu
-if %opcaoImpressora% equ 3 call :driversDown "%elgini9%" DriverImpressora "Elgin i9" & goto menu
-if %opcaoImpressora% equ 4 call :driversDown "%epsontmt%" DriverImpressora "Epson TM T20 / T20x" & goto menu
-if %opcaoImpressora% equ 5 call :driversDown "%sweda%" DriverImpressora "Sweda" & goto menu
-if %opcaoImpressora% equ 6 call :driversDown "%tanca%" DriverImpressora "Tanca TP 650" & goto menu
+if %opcaoImpressora% equ 1 call :standardFileDown "%bema4200%" "%FILES_FOLDER%\DriverImpressora.zip" "Bematech 4200 th" && call :standardZipExtract "%FILES_FOLDER%\DriverImpressora.zip" "Bematech 4200 th" "%FILES_FOLDER%" && goto menu
+if %opcaoImpressora% equ 2 call :standardFileDown "%bema4200hs%" "%FILES_FOLDER%\DriverImpressora.zip" "Bematech 4200 HS" && call :standardZipExtract "%FILES_FOLDER%\DriverImpressora.zip" "Bematech 4200 HS" "%FILES_FOLDER%" && goto menu
+if %opcaoImpressora% equ 3 call :standardFileDown "%elgini9%" "%FILES_FOLDER%\DriverImpressora.zip" "Elgin i9" && call :standardZipExtract "%FILES_FOLDER%\DriverImpressora.zip" "Elgin i9" "%FILES_FOLDER%" && goto menu
+if %opcaoImpressora% equ 4 call :standardFileDown "%epsontmt%" "%FILES_FOLDER%\DriverImpressora.zip" "Epson TM T20 / T20x" && call :standardZipExtract "%FILES_FOLDER%\DriverImpressora.zip" "Epson TM T20 / T20x" "%FILES_FOLDER%" && goto menu
+if %opcaoImpressora% equ 5 call :standardFileDown "%sweda%" "%FILES_FOLDER%\DriverImpressora.zip" "Sweda" && call :standardZipExtract "%FILES_FOLDER%\DriverImpressora.zip" "Sweda" "%FILES_FOLDER%" && goto menu
+if %opcaoImpressora% equ 6 call :standardFileDown "%tanca%" "%FILES_FOLDER%\DriverImpressora.zip" "Tanca TP 650" && call :standardZipExtract "%FILES_FOLDER%\DriverImpressora.zip" "Tanca TP 650" "%FILES_FOLDER%" && goto menu
 if %opcaoImpressora% equ 7 goto menudrivers
 if %opcaoImpressora% equ 8 goto menu
 if %opcaoImpressora% GEQ 9 call :opcaoinexistente menu
 if %opcaoImpressora% EQU 0 call :opcaoinexistente menu
 REM #################### menuimpressora ####################
+
+
 
 REM #################### menusat ####################
 :menusat
@@ -851,15 +745,15 @@ echo * 9. Tanca
 echo * 10. Voltar Menu Drivers
 echo * 11. Voltar Menu Principal
 set /p opcaoSAT= Escolha uma opcao: 
-if %opcaoSAT% equ 1 call :driversDown "%bemagotoelgin%" DriverSAT "BemaGo para Elgin" & goto menu
-if %opcaoSAT% equ 2 call :driversDown "%bemarb%" DriverSAT "Bematech RB2000 / RB1000" & goto menu
-if %opcaoSAT% equ 3 call :driversDown "%dimep%" DriverSAT "Dimep" & goto menu
-if %opcaoSAT% equ 4 call :driversDown "%elginsmart%" DriverSAT "Elgin Smart" & goto menu
-if %opcaoSAT% equ 5 call :driversDown "%sateelginlinker%" DriverSAT "Elgin Linker/Erro 6099" & goto menu
-if %opcaoSAT% equ 6 call :driversDown "%gertecepson%" DriverSAT "Gertec / Epson" & goto menu
-if %opcaoSAT% equ 7 call :driversDown "%satsweda%" DriverSAT "Sweda" & goto menu
-if %opcaoSAT% equ 8 call :driversDown "%controlid%" DriverSAT "ControlID" & goto menu
-if %opcaoSAT% equ 9 call :driversDown "%sattanca%" DriverSAT "Tanca" & goto menu
+if %opcaoSAT% equ 1 call :standardFileDown "%bemagotoelgin%" "%FILES_FOLDER%\DriverSAT.zip" "BemaGo para Elgin" && call :standardZipExtract "%FILES_FOLDER%\DriverSAT.zip" "BemaGo para Elgin" "%FILES_FOLDER%" && goto menu
+if %opcaoSAT% equ 2 call :standardFileDown "%bemarb%" "%FILES_FOLDER%\DriverSAT.zip" "Bematech RB2000 / RB1000" && call :standardZipExtract "%FILES_FOLDER%\DriverSAT.zip" "Bematech RB2000 / RB1000" "%FILES_FOLDER%" && goto menu
+if %opcaoSAT% equ 3 call :standardFileDown "%dimep%" "%FILES_FOLDER%\DriverSAT.zip" "Dimep" && call :standardZipExtract "%FILES_FOLDER%\DriverSAT.zip" "Dimep" "%FILES_FOLDER%" && goto menu
+if %opcaoSAT% equ 4 call :standardFileDown "%elginsmart%" "%FILES_FOLDER%\DriverSAT.zip" "Elgin Smart" && call :standardZipExtract "%FILES_FOLDER%\DriverSAT.zip" "Elgin Smart" "%FILES_FOLDER%" && goto menu
+if %opcaoSAT% equ 5 call :standardFileDown "%sateelginlinker%" "%FILES_FOLDER%\DriverSAT.zip" "Elgin Linker/Erro 6099" && call :standardZipExtract "%FILES_FOLDER%\DriverSAT.zip" "Elgin Linker/Erro 6099" "%FILES_FOLDER%" && goto menu
+if %opcaoSAT% equ 6 call :standardFileDown "%gertecepson%" "%FILES_FOLDER%\DriverSAT.zip" "Gertec / Epson" && call :standardZipExtract "%FILES_FOLDER%\DriverSAT.zip" "Gertec / Epson" "%FILES_FOLDER%" && goto menu
+if %opcaoSAT% equ 7 call :standardFileDown "%satsweda%" "%FILES_FOLDER%\DriverSAT.zip" "Sweda" && call :standardZipExtract "%FILES_FOLDER%\DriverSAT.zip" "Sweda" "%FILES_FOLDER%" && goto menu
+if %opcaoSAT% equ 8 call :standardFileDown "%controlid%" "%FILES_FOLDER%\DriverSAT.zip" "ControlID" && call :standardZipExtract "%FILES_FOLDER%\DriverSAT.zip" "ControlID" "%FILES_FOLDER%" && goto menu
+if %opcaoSAT% equ 9 call :standardFileDown "%sattanca%" "%FILES_FOLDER%\DriverSAT.zip" "Tanca" && call :standardZipExtract "%FILES_FOLDER%\DriverSAT.zip" "Tanca" "%FILES_FOLDER%" && goto menu
 if %opcaoSAT% equ 10 goto menudrivers
 if %opcaoSAT% equ 11 goto menu
 if %opcaoSAT% GEQ 12 call :opcaoinexistente menu
@@ -875,8 +769,8 @@ echo * 2. Smak
 echo * 3. Voltar Menu Drivers
 echo * 4. Voltar Menu Principal
 set /p opcaoTeclado= Escolha uma opcao: 
-if %opcaoTeclado% equ 1 call :driversDown "%tecladogertec%" DriverTeclado "Gertec" & goto menu
-if %opcaoTeclado% equ 2 call :driversDown "%tecladosmak%" DriverTeclado "Smak" & goto menu
+if %opcaoTeclado% equ 1 call :standardFileDown "%tecladogertec%" "%FILES_FOLDER%\DriverTeclado.zip" "Gertec" && call :standardZipExtract "%FILES_FOLDER%\DriverTeclado.zip" "Gertec" "%FILES_FOLDER%" && goto menu
+if %opcaoTeclado% equ 2 call :standardFileDown "%tecladosmak%" "%FILES_FOLDER%\DriverTeclado.zip" "Smak" && call :standardZipExtract "%FILES_FOLDER%\DriverTeclado.zip" "Smak" "%FILES_FOLDER%" && goto menu
 if %opcaoTeclado% equ 3 goto menudrivers
 if %opcaoTeclado% equ 4 goto menu
 if %opcaoTeclado% GEQ 5 call :opcaoinexistente menu
@@ -884,7 +778,7 @@ if %opcaoTeclado% EQU 0 call :opcaoinexistente menu
 REM #################### menuteclado ####################
 
 REM #################### menupinpad ####################
-:opcaoDrivers5
+:menupinpad
 echo:
 echo:
 echo * 1. Gertec
@@ -892,8 +786,8 @@ echo * 2. Ingenico
 echo * 3. Voltar Menu Drivers
 echo * 4. Voltar Menu Principal
 set /p opcaoPinpad= Escolha uma opcao: 
-if %opcaoPinpad% equ 1 call :driversDown "%gertecpinpad%" DriverPinpad "Gertec" & goto menu
-if %opcaoPinpad% equ 2 call :driversDown "%ingenico%" DriverPinpad "Ingenico" & goto menu
+if %opcaoPinpad% equ 1 call :standardFileDown "%gertecpinpad%" "%FILES_FOLDER%\DriverPinpad.zip" "Gertec" && call :standardZipExtract "%FILES_FOLDER%\DriverPinpad.zip" "Gertec" "%FILES_FOLDER%" && goto menu
+if %opcaoPinpad% equ 2 call :standardFileDown "%ingenico%" "%FILES_FOLDER%\DriverPinpad.zip" "Ingenico" && call :standardZipExtract "%FILES_FOLDER%\DriverPinpad.zip" "Ingenico" "%FILES_FOLDER%" && goto menu
 if %opcaoPinpad% equ 3 goto menudrivers
 if %opcaoPinpad% equ 4 goto menu
 if %opcaoPinpad% GEQ 5 call :opcaoinexistente menu
@@ -901,57 +795,23 @@ if %opcaoPinpad% EQU 0 call :opcaoinexistente menu
 REM #################### menupinpad ####################
 
 REM #################### menuutil ####################
-:opcaoDrivers6
+:menubiometria
 echo:
 echo:
-echo * 1. Biometria Hamster DX
-echo * 2. Firebird
-echo * 3. NetFramework 4.5.2 Win7
+echo * 1. ControlID
+echo * 2. Futronic
+echo * 3. Hamster DX (HFDU06 e HFDU06R)
 echo * 4. Voltar Menu Drivers
 echo * 5. Voltar Menu Principal
 set /p opcaoUteis= Escolha uma opcao: 
-if %opcaoUteis% equ 1 call :driversDown "%biometria_hamsterdx_win%" DriverBiometriaHamsterDX "Biometria Hamster DX" & goto menu
-if %opcaoUteis% equ 2 call :firebirdInstallReinstall & goto menu
-if %opcaoUteis% equ 3 call :driversDown "%netframework%" NetFramewok_452_Win7 "NetFramework 4.5.2 Win7" & goto menu
+if %opcaoUteis% equ 1 call :standardFileDown "%biometria_controlid_idbio%" "%FILES_FOLDER%\DriverBiometriaControlID.zip" "Biometria Control ID" && call :standardZipExtract "%FILES_FOLDER%\DriverBiometriaControlID.zip" "Biometria Control ID" "%FILES_FOLDER%" && goto menu
+if %opcaoUteis% equ 2 call :standardFileDown "%biometria_futronic%" "%FILES_FOLDER%\DriverBiometriaFutronic.zip" "Biometria Futronic" && call :standardZipExtract "%FILES_FOLDER%\DriverBiometriaFutronic.zip" "Biometria Futronic" "%FILES_FOLDER%" && goto menu
+if %opcaoUteis% equ 3 call :standardFileDown "%biometria_hamsterdx%" "%FILES_FOLDER%\DriverBiometriaHamsterDX.zip" "Biometria Hamster DX" && call :standardZipExtract "%FILES_FOLDER%\DriverBiometriaHamsterDX.zip" "Biometria Hamster DX" "%FILES_FOLDER%" && goto menu
 if %opcaoUteis% equ 4 goto menudrivers
 if %opcaoUteis% equ 5 goto menu
 if %opcaoUteis% GEQ 6 call :opcaoinexistente menu
 if %opcaoUteis% EQU 0 call :opcaoinexistente menu
 REM #################### menuutil ####################
-
-REM #################### driversDown ####################
-:driversDown
-set driverLink=%~1
-set driverName=%~2
-set deviceName=%~3
-
-echo:
-echo Baixando %driverName% / %deviceName% ... Aguarde . . .
-
-%wget% --no-check-certificate %driverLink% -O C:\pdv\util\%driverName%.zip >nul 2>&1
-	if errorlevel 1 ( 
-	echo ------------------
-	echo ERRO DOWNLOAD %driverName%
-	echo ------------------
-	pause
-	goto menu
-	)
-
-"C:\pdv\util\Programs\7zip\7z.exe" x C:\pdv\util\%driverName%.zip -oC:\pdv\util -y >nul 2>&1
-	if errorlevel 1 ( 
-	echo ---------------------------
-	echo Erro Extracao %driverName%
-	echo ---------------------------
-	pause
-	goto menu
-	)
-
-echo:
-echo Driver %driverName% / %deviceName% baixado e extraido com sucesso!
-
-del /q C:\pdv\util\%driverName%.zip >nul 2>&1
-exit /b
-REM #################### driversDown ####################
 
 REM #################### menudllsitef ####################
 :menudllsitef
@@ -976,7 +836,6 @@ if %opcaoDllSitef% EQU 0 call :opcaoinexistente menudllsitef
 
 REM #################### menudllsitef ####################
 
-
 REM #################### atualizarDllSitef ####################
 :atualizarDllSitef
 echo ----------------------
@@ -991,11 +850,10 @@ REM set dllfile32="%temp%\Auto_Atualizador\tempdlls\%dllSitefFolder%"
 set "dllfile32=%temp%\Auto_Atualizador\tempdlls\%~1"
 
 set copyerror=Erro ao Copiar Dlls
-set wget="c:\pdv\util\Programs\wget\wget.exe"
 set dllsitefx86="https://storage.googleapis.com/linux-pdv/Jeff/Clisitef32_Win.zip"
 
 call :datetime
-set bkpOldDlls="c:\pdv\util\BKP_Dlls_Sitef_%dateTime%"
+set bkpOldDlls="C:\vr\BKP_Dlls_Sitef_%dateTime%"
 
 REM ===================== Declaracao de variaveis ===========================
 
@@ -1017,37 +875,15 @@ timeout 2 >nul 2>&1
 echo:
 echo Baixando DLLS Sitef Win ... Aguarde ...
 echo:
-%wget% --no-check-certificate %dllsitefx86% -O %temp%\Auto_Atualizador\tempdlls\dllssitef.zip >nul 2>&1
-if errorlevel 1 (
-cls
-echo:
-echo ---------------------------
-echo Erro Download DLLs do Sitef
-echo ---------------------------
-%errodowndlls32% >nul 2>&1
-pause
-goto menu
-)
-
-echo:
-echo Extraindo dlls em TempDlls ...
-echo:
-"C:\pdv\util\Programs\7zip\7z.exe" x "%temp%\Auto_Atualizador\tempdlls\dllssitef.zip" -o"%temp%\Auto_Atualizador\tempdlls" -y >nul 2>&1
-REM powershell -Command "Expand-Archive -LiteralPath '%temp%\Auto_Atualizador\tempdlls\dllssitef.zip' -DestinationPath '%temp%\Auto_Atualizador\tempdll' -Force"
-if errorlevel 1 ( 
-echo ---------------------------
-echo Erro Extracao DLLs do Sitef
-echo ---------------------------
-pause
-goto menu
-)
+call :standardFileDown "%dllsitefx86%" "%temp%\Auto_Atualizador\tempdlls\dllssitef.zip" "DllSitef"
+call :standardZipExtract "%temp%\Auto_Atualizador\tempdlls\dllssitef.zip" "DllsSitef" "%temp%\Auto_Atualizador\tempdlls"
 
 REM  - Excluindo dllssitef.zip  
 del /q %temp%\Auto_Atualizador\tempdlls\*.zip >nul 2>&1
 del /q %temp%\Auto_Atualizador\tempdlls\*.pdf >nul 2>&1
 
 if not exist "%dllfile32%" (
-    echo Diretorio origem das dlls %dllfile32% nÃ£o encontrado
+    echo Diretorio origem das dlls %dllfile32% nao encontrado
 	pause
 	exit
 )
@@ -1073,7 +909,7 @@ if exist "C:\Windows\SysWOW64\user32.dll" (
 	)
     if errorlevel 1 call :copyerror
     if not exist "C:\Windows\SysWOW64\jCliSiTefI.dll" (
-        copy C:\pdv\util\Programs\jClisitef\jCliSiTefI.dll C:\Windows\SysWOW64 /Y >nul 2>&1
+        copy %FILES_FOLDER%\Programs\jClisitef\jCliSiTefI.dll C:\Windows\SysWOW64 /Y >nul 2>&1
     )
 	echo Aplicando permissoes CliSitef.ini ...
 	cacls C:\Windows\SysWOW64\CliSiTef.ini /E /T /C /P Todos:F REDE:F >nul 2>&1
@@ -1101,7 +937,7 @@ if exist "C:\Windows\SysWOW64\user32.dll" (
 		if errorlevel 1 call :copyerror
 
 		if not exist "C:\Windows\System32\jCliSiTefI.dll" (
-			copy C:\pdv\util\Programs\jClisitef\jCliSiTefI.dll C:\Windows\System32 /Y >nul 2>&1
+			copy %FILES_FOLDER%\Programs\jClisitef\jCliSiTefI.dll C:\Windows\System32 /Y >nul 2>&1
 		)
 		echo Aplicando permissoes CliSitef.ini ...
 		cacls C:\Windows\System32\CliSiTef.ini /E /T /C /P Todos:F REDE:F >nul 2>&1
@@ -1121,6 +957,25 @@ if exist "C:\Windows\SysWOW64\CliSiTef32I.dll" (
 	del /q "C:\Windows\System32\Cheque.txt" >nul 2>&1
 	REM del /q "C:\Windows\System32\jCliSiTefI.dll" >nul 2>&1
  )
+)
+
+if exist "C:\VRPdv\libs" (
+    echo Copiando novas Dlls para C:\VRPdv\libs...
+    echo:
+    echo Copiando de: %dllfile32% para C:\VRPdv\libs
+	for %%F in ("%dllfile32%\*.*") do (
+		echo Copiando: %%~nxF
+		copy "%%~F" C:\VRPdv\libs\ /Y
+	)
+    if errorlevel 1 call :copyerror
+
+	echo Aplicando permissoes C:\VRPdv\libs ...
+	cacls C:\VRPdv\libs\CliSiTef.ini /E /T /C /P Todos:F REDE:F >nul 2>&1
+	cacls C:\VRPdv\libs\CliSiTef32I.dll /E /T /C /P Todos:F REDE:F >nul 2>&1
+	cacls C:\VRPdv\libs\libemv.dll /E /T /C /P Todos:F REDE:F >nul 2>&1
+	cacls C:\VRPdv\libs\QREncode32.dll /E /T /C /P Todos:F REDE:F >nul 2>&1
+	cacls C:\VRPdv\libs\RechargeRPC.dll /E /T /C /P Todos:F REDE:F >nul 2>&1
+	explorer "C:\VRPdv\libs" >nul 2>&1
 )
 
 REM Apagando pasta TempDlls
@@ -1151,8 +1006,8 @@ goto menu
 
 REM #################### atualizarDllSitef ####################
 
-REM #################### permissoesdriversat ####################
-:permissoesdriversat
+REM #################### permissoes ####################
+:permissoes
 cls
 echo:
 echo ==============================================
@@ -1307,52 +1162,6 @@ cacls %javapath_java% /E /T /C /P Todos:F REDE:F >nul 2>&1
 cacls %javapath_javaw% /E /T /C /P Todos:F REDE:F >nul 2>&1
 cacls %javapath_javaws% /E /T /C /P Todos:F REDE:F >nul 2>&1
 
-reg add "HKEY_CURRENT_USER\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %javapath_java% /t REG_SZ /d "RUNASADMIN" /f >nul 2>&1
-reg add "HKEY_CURRENT_USER\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %javapath_javaw% /t REG_SZ /d "RUNASADMIN" /f >nul 2>&1
-reg add "HKEY_CURRENT_USER\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %javapath_javaws% /t REG_SZ /d "RUNASADMIN" /f >nul 2>&1
-reg add "HKEY_CURRENT_USER\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %JAVAEXEC% /t REG_SZ /d "RUNASADMIN" /f >nul 2>&1
-reg add "HKEY_CURRENT_USER\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %JAVAWEXEC% /t REG_SZ /d "RUNASADMIN" /f >nul 2>&1
-reg add "HKEY_CURRENT_USER\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %JAVAWSEXEC% /t REG_SZ /d "RUNASADMIN" /f >nul 2>&1
-
-reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %javapath_java% /t REG_SZ /d "RUNASADMIN" /f >nul 2>&1
-reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %javapath_javaw% /t REG_SZ /d "RUNASADMIN" /f >nul 2>&1
-reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %javapath_javaws% /t REG_SZ /d "RUNASADMIN" /f >nul 2>&1
-reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %JAVAEXEC% /t REG_SZ /d "RUNASADMIN" /f >nul 2>&1
-reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %JAVAWEXEC% /t REG_SZ /d "RUNASADMIN" /f >nul 2>&1
-reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %JAVAWSEXEC% /t REG_SZ /d "RUNASADMIN" /f >nul 2>&1
-
-rem -----------------------------------
-reg add "HKEY_CURRENT_USER\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %javapath_java% /t REG_SZ /d "~RUNASADMIN" /f >nul 2>&1
-reg add "HKEY_CURRENT_USER\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %javapath_javaw% /t REG_SZ /d "~RUNASADMIN" /f >nul 2>&1
-reg add "HKEY_CURRENT_USER\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %javapath_javaws% /t REG_SZ /d "~RUNASADMIN" /f >nul 2>&1
-reg add "HKEY_CURRENT_USER\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %JAVAEXEC% /t REG_SZ /d "~RUNASADMIN" /f >nul 2>&1
-reg add "HKEY_CURRENT_USER\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %JAVAWEXEC% /t REG_SZ /d "~RUNASADMIN" /f >nul 2>&1
-reg add "HKEY_CURRENT_USER\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %JAVAWSEXEC% /t REG_SZ /d "~RUNASADMIN" /f >nul 2>&1
-
-reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %javapath_java% /t REG_SZ /d "~RUNASADMIN" /f >nul 2>&1
-reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %javapath_javaw% /t REG_SZ /d "~RUNASADMIN" /f >nul 2>&1
-reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %javapath_javaws% /t REG_SZ /d "~RUNASADMIN" /f >nul 2>&1
-reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %JAVAEXEC% /t REG_SZ /d "~RUNASADMIN" /f >nul 2>&1
-reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %JAVAWEXEC% /t REG_SZ /d "~RUNASADMIN" /f >nul 2>&1
-reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %JAVAWSEXEC% /t REG_SZ /d "~RUNASADMIN" /f >nul 2>&1
-rem -----------------------------------
-
-rem -----------------------------------
-reg add "HKEY_CURRENT_USER\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %javapath_java% /t REG_SZ /d "~ RUNASADMIN" /f >nul 2>&1
-reg add "HKEY_CURRENT_USER\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %javapath_javaw% /t REG_SZ /d "~ RUNASADMIN" /f >nul 2>&1
-reg add "HKEY_CURRENT_USER\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %javapath_javaws% /t REG_SZ /d "~ RUNASADMIN" /f >nul 2>&1
-reg add "HKEY_CURRENT_USER\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %JAVAEXEC% /t REG_SZ /d "~ RUNASADMIN" /f >nul 2>&1
-reg add "HKEY_CURRENT_USER\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %JAVAWEXEC% /t REG_SZ /d "~ RUNASADMIN" /f >nul 2>&1
-reg add "HKEY_CURRENT_USER\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %JAVAWSEXEC% /t REG_SZ /d "~ RUNASADMIN" /f >nul 2>&1
-
-reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %javapath_java% /t REG_SZ /d "~ RUNASADMIN" /f >nul 2>&1
-reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %javapath_javaw% /t REG_SZ /d "~ RUNASADMIN" /f >nul 2>&1
-reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %javapath_javaws% /t REG_SZ /d "~ RUNASADMIN" /f >nul 2>&1
-reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %JAVAEXEC% /t REG_SZ /d "~ RUNASADMIN" /f >nul 2>&1
-reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %JAVAWEXEC% /t REG_SZ /d "~ RUNASADMIN" /f >nul 2>&1
-reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" /v %JAVAWSEXEC% /t REG_SZ /d "~ RUNASADMIN" /f >nul 2>&1
-rem -----------------------------------
-
 echo:
 echo =============================================================
 echo Aplicando permissoes CliSitef.ini e Dlls Sitef... Aguarde ...
@@ -1409,7 +1218,7 @@ echo =================================
 echo PROCESSO DE PERMISSOES FINALIZADO
 echo =================================
 exit /b
-REM #################### permissoesdriversat ####################
+REM #################### permissoes ####################
 
 REM #################### copiardlls ####################
 :copiardlls
@@ -1420,18 +1229,18 @@ echo Copiando Dlls para System32 / SysWoW64
 echo ======================================
 echo:
 echo Aplicando permissao de Todos para as dlls /pdv/driver e /pdv/sat/
-cacls c:\pdv\driver\*.* /E /T /C /P Todos:F REDE:F >nul 2>&1
-cacls c:\pdv\sat\*.* /E /T /C /P Todos:F REDE:F >nul 2>&1
+cacls C:\pdv\driver\*.* /E /T /C /P Todos:F REDE:F >nul 2>&1
+cacls C:\pdv\sat\*.* /E /T /C /P Todos:F REDE:F >nul 2>&1
 
 echo Copiando para pasta do Windows System32 ou SysWoW64
 if exist C:\Windows\SysWOW64 (
-  copy c:\pdv\driver\*.* C:\Windows\SysWOW64 /Y >nul 2>&1
-  copy c:\pdv\sat\*.* C:\Windows\SysWOW64 /Y >nul 2>&1
+  copy C:\pdv\driver\*.* C:\Windows\SysWOW64 /Y >nul 2>&1
+  copy C:\pdv\sat\*.* C:\Windows\SysWOW64 /Y >nul 2>&1
   echo:
   echo Copiado para SysWOW64 ...
   ) else (
-  copy c:\pdv\driver\*.* C:\Windows\System32 /Y >nul 2>&1
-  copy c:\pdv\sat\*.* C:\Windows\System32 /Y >nul 2>&1
+  copy C:\pdv\driver\*.* C:\Windows\System32 /Y >nul 2>&1
+  copy C:\pdv\sat\*.* C:\Windows\System32 /Y >nul 2>&1
   echo:
   echo Copiado para System32 ...
 )
@@ -1542,303 +1351,6 @@ call :atualizarDllSitef "DllSitef_Atual"
 exit /b
 REM #################### atualizarJavaDllSitef ####################
 
-REM #################### gsurfFilesOnly ####################
-:gsurfFilesOnly
-cls
-REM =======Checagem pasta VPN_Gsurf_Sitef_Express=======
-if exist C:\pdv\util\VPN_Gsurf_Sitef_Express (
-	cd c:\pdv\util >nul 2>&1
-	rmdir /S /Q C:\pdv\util\VPN_Gsurf_Sitef_Express >nul 2>&1
-	mkdir C:\pdv\util\VPN_Gsurf_Sitef_Express >nul 2>&1
-) else (
-	mkdir C:\pdv\util\VPN_Gsurf_Sitef_Express >nul 2>&1
-)
-REM =======Checagem pasta GsurfCertificado=======
-if exist C:\pdv\util\GsurfCertificado (
-	cd c:\pdv\util >nul 2>&1
-	rmdir /S /Q C:\pdv\util\GsurfCertificado >nul 2>&1
-	mkdir C:\pdv\util\GsurfCertificado >nul 2>&1
-) else (
-	mkdir C:\pdv\util\GsurfCertificado >nul 2>&1
-)
-REM =======Checagem pasta GsurfListenerClient=======
-if exist C:\pdv\util\GsurfListenerClient (
-	cd c:\pdv\util >nul 2>&1
-	rmdir /S /Q C:\pdv\util\GsurfListenerClient >nul 2>&1
-	mkdir C:\pdv\util\GsurfListenerClient >nul 2>&1
-) else (
-	mkdir C:\pdv\util\GsurfListenerClient >nul 2>&1
-)
-REM =======Checagem pasta RequisitosGsurf=======
-if exist C:\pdv\util\RequisitosGsurf (
-	cd c:\pdv\util >nul 2>&1
-	rmdir /S /Q C:\pdv\util\RequisitosGsurf >nul 2>&1
-	mkdir C:\pdv\util\RequisitosGsurf >nul 2>&1
-) else (
-	mkdir C:\pdv\util\RequisitosGsurf >nul 2>&1
-)
-
-call :gsurfDownloadCertificadoListenerClient
-
-	echo:
-	echo ===================================
-	echo Gsurf - Arquivos Apenas - Encerrado
-	echo ===================================
-	pause
-
-exit /b
-REM #################### gsurfFilesOnly ####################
-
-REM #################### gsurfFullInstall ####################
-:gsurfFullInstall
-cls
-REM =======Checagem pasta VPN_Gsurf_Sitef_Express=======
-if exist C:\pdv\util\VPN_Gsurf_Sitef_Express (
-	cd c:\pdv\util >nul 2>&1
-	rmdir /S /Q C:\pdv\util\VPN_Gsurf_Sitef_Express >nul 2>&1
-	mkdir C:\pdv\util\VPN_Gsurf_Sitef_Express >nul 2>&1
-) else (
-	mkdir C:\pdv\util\VPN_Gsurf_Sitef_Express >nul 2>&1
-)
-REM =======Checagem pasta GsurfCertificado=======
-if exist C:\pdv\util\GsurfCertificado (
-	cd c:\pdv\util >nul 2>&1
-	rmdir /S /Q C:\pdv\util\GsurfCertificado >nul 2>&1
-	mkdir C:\pdv\util\GsurfCertificado >nul 2>&1
-) else (
-	mkdir C:\pdv\util\GsurfCertificado >nul 2>&1
-)
-REM =======Checagem pasta GsurfListenerClient=======
-if exist C:\pdv\util\GsurfListenerClient (
-	cd c:\pdv\util >nul 2>&1
-	rmdir /S /Q C:\pdv\util\GsurfListenerClient >nul 2>&1
-	mkdir C:\pdv\util\GsurfListenerClient >nul 2>&1
-) else (
-	mkdir C:\pdv\util\GsurfListenerClient >nul 2>&1
-)
-REM =======Checagem pasta RequisitosGsurf=======
-if exist C:\pdv\util\RequisitosGsurf (
-	cd c:\pdv\util >nul 2>&1
-	rmdir /S /Q C:\pdv\util\RequisitosGsurf >nul 2>&1
-	mkdir C:\pdv\util\RequisitosGsurf >nul 2>&1
-) else (
-	mkdir C:\pdv\util\RequisitosGsurf >nul 2>&1
-)
-
-call :gsurfDownloadCertificadoListenerClient
-call :updateJavaVRS "%java301link%" 301
-call :atualizarDllSitef "DllSitef_Atual"
-call :gsurfInstall
-
-	echo:
-	echo ==============================
-	echo Gsurf - Sitef Express Completo
-	echo ==============================
-	%javainstallsuccess% >nul 2>&1
-
-exit /b
-REM #################### gsurfFullInstall ####################
-
-REM #################### gsurfDownloadCertificadoListenerClient ####################
-:gsurfDownloadCertificadoListenerClient
-cls
-echo ==========================================================
-echo        Download Certificado e Gsurf Listener Client       
-echo ==========================================================
-echo:
-
-echo Download Certificado
-echo:
-
-%wget% --no-check-certificate %certificadogsurf% -O C:\pdv\util\VPN_Gsurf_Sitef_Express\Certificado.zip >nul 2>&1
-if errorlevel 1 ( 
-echo ----------------------------------------
-echo Erro ao realizar Download do Certificado
-echo ----------------------------------------
-%errodowncertificadogsurf% >nul 2>&1
-pause
-goto menu
-) 
-REM timeout 1 >nul 2>&1
-
-"C:\pdv\util\Programs\7zip\7z.exe" e C:\pdv\util\VPN_Gsurf_Sitef_Express\Certificado.zip -oC:\pdv\util\GsurfCertificado -y >nul 2>&1
-if errorlevel 1 ( 
-echo ----------------------------------------
-echo Erro ao realizar Extracao do Certificado
-echo ----------------------------------------
-%erroextractcertificadogsurf% >nul 2>&1
-pause
-goto menu
-) 
-REM timeout 1 >nul 2>&1
-
-REM ==Aplicando permissao de todos no executavel do Certificado==
-cacls C:\pdv\util\GsurfCertificado\InstaladorGSurf.exe /E /T /C /P Todos:F REDE:F >nul 2>&1
-
-REM ==========DOWNLOAD/EXTRACT CLIENT LISTENER=================================
-echo Download Client
-echo:
-%wget% --no-check-certificate %clientgsurf% -O C:\pdv\util\VPN_Gsurf_Sitef_Express\GsurfListenerClient.zip >nul 2>&1
-if errorlevel 1 ( 
-echo -----------------------------------------
-echo Erro ao realizar Download do Client Gsurf
-echo -----------------------------------------
-%errodownclientegsurf% >nul 2>&1
-goto menu
-) 
-REM timeout 1 >nul 2>&1
-
-"C:\pdv\util\Programs\7zip\7z.exe" e C:\pdv\util\VPN_Gsurf_Sitef_Express\GsurfListenerClient.zip -oC:\pdv\util\GsurfListenerClient -y >nul 2>&1
-if errorlevel 1 ( 
-echo -----------------------------------------
-echo Erro ao realizar Extracao do Client Gsurf
-echo -----------------------------------------
-%erroextractclientegsurf% >nul 2>&1
-goto menu
-) 
-REM timeout 1 >nul 2>&1
-
-REM ==========DOWNLOAD/EXTRACT REQUISITOS=================================
-%wget% --no-check-certificate https://gsurf.com.br/lib/win/requisitos.zip -O C:\pdv\util\VPN_Gsurf_Sitef_Express\Requisitos.zip >nul 2>&1
-
-"C:\pdv\util\Programs\7zip\7z.exe" e C:\pdv\util\VPN_Gsurf_Sitef_Express\Requisitos.zip -oC:\pdv\util\RequisitosGsurf -y >nul 2>&1
-
-REM ===============LIMPANDO ARQUIVOS BAIXADOS==================
-rmdir /S /Q C:\pdv\util\VPN_Gsurf_Sitef_Express >nul 2>&1
-
-exit /b
-REM #################### gsurfDownloadCertificadoListenerClient ####################
-
-REM #################### gsurfInstall ####################
-:gsurfInstall
-echo Checando NETFramework
-echo:
-reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\.NETFramework\v4.0.30319\SKUs\.NETFramework,Version=v4.5" >nul 2>&1
-rem 1 = not installed e 0 = installed
-
-	if errorlevel 1 (
-		rem Download NetFramework
-		echo --------------------------------------------------
-		echo NETFramework nao instalado, realizando download...
-		echo --------------------------------------------------
-		"C:\pdv\util\Programs\wget\wget.exe" --no-check-certificate %netframework% -O %temp%\Auto_Atualizador\NetFramework452.exe >nul 2>&1
-			if errorlevel 1 (
-			echo -----------------------------
-			echo Erro no Download NetFramework
-			echo -----------------------------
-			%netframeinstallerror% >nul 2>&1
-			timeout 1 >nul 2>&1
-			goto gsurfclient
-			) 
-		timeout 1 >nul 2>&1
-			
-		rem Instalando NetFramework
-		echo -------------------------------------
-		echo Instalando NetFramework....Aguarde...
-		echo -------------------------------------
-		%installnetframe% >nul 2>&1
-		:installnetframe2
-		start /WAIT %temp%\Auto_Atualizador\NetFramework452.exe /q /norestart >nul 2>&1
-			if errorlevel 1 (
-			echo -----------------------------
-			echo Erro ao instalar NetFramework
-			echo -----------------------------
-			%netframeinstallerror% >nul 2>&1
-			set netframefailed=1
-			) else (
-			echo ----------------------------------
-			echo NetFramework instalado com sucesso
-			echo ----------------------------------
-			%netframeinstallsuccess% >nul 2>&1
-			timeout 1 >nul 2>&1
-			)
-	) else (
-		echo NetFramework ja instalado
-		timeout 1 >nul 2>&1
-	)
-	
-REM ============= Instalando Client Listener ================
-:gsurfclient
-echo =============================================
-echo Instalando Gsurf Client Listener...Aguarde...
-echo =============================================
-start C:\pdv\util\GsurfListenerClient\GSurfRSA_Listener_Setup.msi
-:menuclientgsurf
-echo:
-echo * 1 - Executar novamente
-echo * 2 - Continuar instalacao
-set /p option= Escolha uma opcao: 
-if %option% equ 1 (
-start C:\pdv\util\GsurfListenerClient\GSurfRSA_Listener_Setup.msi
-goto menuclientgsurf
-)
-if %option% equ 2 goto certgsurf
-REM msiexec.exe /i "C:\pdv\util\GsurfListenerClient\GSurfRSA_Listener_Setup.msi" /q SERVICO="sitef" >nul 2>&1
-REM if errorlevel 1 (
-REM echo -----------------------------------
-REM echo ERRO Instalar Gsurf Client Listener
-REM echo -----------------------------------
-REM timeout 5 >nul 2>&1
-REM ) else (
-REM echo ===========================================
-REM echo Client Gsurf Listener instalado com sucesso
-REM echo ===========================================
-REM timeout 1 >nul 2>&1
-REM )
-
-REM ============= Instalando Certificado =============
-:certgsurf
-echo:
-echo =========================================
-echo Instalando Certificado Gsurf...Aguarde...
-echo =========================================
-start C:\pdv\util\GsurfCertificado\InstaladorGSurf.exe
-:menucertgsurf
-echo:
-echo * 1 - Executar novamente
-echo * 2 - Continuar instalacao
-set /p option= Escolha uma opcao: 
-if %option% equ 1 (
-start C:\pdv\util\GsurfCertificado\InstaladorGSurf.exe
-goto menucertgsurf
-)
-if %option% equ 2 goto startservice
- REM >nul 2>&1
-REM if errorlevel 1 (
-REM echo ----------------------------------
-REM echo ERRO ao instalar Certificado Gsurf
-REM echo ----------------------------------
-REM timeout 5 >nul 2>&1
-REM ) else (
-REM echo =======================================
-REM echo Certificado Gsurf Instalado com Sucesso
-REM echo =======================================
-REM timeout 2 >nul 2>&1
-REM )
-
-REM =======INSTALACAO GSURF==============
-
-REM ============= INICIANDO SERVICO GSURF CLIENT ==============
-:startservice
-echo:
-echo Iniciando Servico Gsurf Listener
-echo:
-net stop "GSurfRSA Listener" >nul 2>&1
-net start "GSurfRSA Listener" >nul 2>&1
-if errorlevel 1 (
-echo --------------------------------------
-echo ERRO ao iniciar Servico Gsurf Listener
-echo --------------------------------------
-timeout 5 >nul 2>&1
-) else (
-REM echo ===========================================
-echo Servico Gsurf Listener iniciado com sucesso
-echo:
-REM echo ===========================================
-)
-exit /b
-REM #################### gsurfInstall ####################
-
 REM #################### updateJavaVRS ####################
 :updateJavaVRS
 set javaDownLink=%~1
@@ -1855,39 +1367,15 @@ set javacheck=%~2
 	if not exist "%javaExist%" goto directInstallJava
 	rem ---------- Check if java installed, if equ 1 no java installed ---------
 	
-	echo ==============================================================
-	echo ***** Java Uninstaller Download em andamento. . . Aguarde ****
-	echo ==============================================================
-	%wget% --no-check-certificate %javaRemoverLink% -O %temp%\Auto_Atualizador\RemovedorJavasTool.exe >nul 2>&1
-	copy %temp%\Auto_Atualizador\RemovedorJavasTool.exe C:\pdv\util >nul 2>&1
-	start %temp%\Auto_Atualizador\RemovedorJavasTool.exe >nul 2>&1
-	echo Java Uninstaller em andamento, aguarde ...
-		:errorTypingJava
-		echo:
-		echo * 1 - Continuar instalacao
-		echo * 2 - Retornar Menu Principal
-		echo * 3 - Sair
-		set /p optionjavavrs= Escolha uma opcao: 
-		if %optionjavavrs% GEQ 4 (echo Opcao nao disponivel& goto errorTypingJava)
-		if %optionjavavrs% equ 1 goto directInstallJava
-		if %optionjavavrs% equ 2 goto menu
-		if %optionjavavrs% equ 3 exit
-		
+    call :javaCheckForRemove
+
 	:directInstallJava
 	echo:
 	echo ==================================================
 	echo ***** Java Download em andamento. . . Aguarde ****
 	echo ==================================================
 	taskkill /f /im java* >nul 2>&1
-	%wget% --no-check-certificate %javaDownLink% -O %temp%\Auto_Atualizador\Java%javacheck%_SetupInstall.exe >nul 2>&1
-	if errorlevel 1 ( 
-	echo ------------------
-	echo ERRO DOWNLOAD JAVA
-	echo ------------------
-	%javadownloaderror% >nul 2>&1
-	timeout 3 >nul 2>&1
-	goto menu
-	)
+	call :standardFileDown %javaDownLink% "%temp%\Auto_Atualizador\Java%javacheck%_SetupInstall.exe" "Java%javacheck%"
 	REM --------- Imprime a mensagem e aguarda clicar em Ok para dar sequencia
 	%holdjavainstall% >nul 2>&1
 	
@@ -1895,7 +1383,7 @@ set javacheck=%~2
 	echo ----------------------------
 	echo Instalando Java, aguarde ...
 	echo ----------------------------
-	copy %temp%\Auto_Atualizador\Java%javacheck%_SetupInstall.exe C:\pdv\util >nul 2>&1
+	copy %temp%\Auto_Atualizador\Java%javacheck%_SetupInstall.exe %FILES_FOLDER% >nul 2>&1
 	start /WAIT %temp%\Auto_Atualizador\Java%javacheck%_SetupInstall.exe /s REMOVEOUTOFDATEJRES=Enable
 	
 	if errorlevel 1 (
@@ -1974,20 +1462,11 @@ REM #################### javaUninstaller ####################
 echo ======================================
 echo Download Java Uninstaller em progresso
 echo ======================================
-
-%wget% --no-check-certificate %javaRemoverLink% -O %temp%\Auto_Atualizador\RemovedorJavasTool.exe >nul 2>&1
-if errorlevel 1 ( 
-echo ------------------------------
-echo ERRO DOWNLOAD JAVA Uninstaller
-echo ------------------------------
-pause
-goto menujava
-)
-copy %temp%\Auto_Atualizador\RemovedorJavasTool.exe C:\pdv\util >nul 2>&1
+call :standardFileDown %javaRemoverLink% "%temp%\Auto_Atualizador\RemovedorJavasTool.exe" "RemovedorJavasTool"
+copy %temp%\Auto_Atualizador\RemovedorJavasTool.exe %FILES_FOLDER% >nul 2>&1
 start %temp%\Auto_Atualizador\RemovedorJavasTool.exe >nul 2>&1
 exit /b
 REM #################### javaUninstaller ####################
-
 
 REM #################### notepad ####################
 :notepad
@@ -1999,7 +1478,7 @@ REM #################### notepad ####################
 	echo ----------------------------------
 	echo Download em andamento...Aguarde...
 	echo ----------------------------------
-%wget% --no-check-certificate %notepad% -O %temp%\Auto_Atualizador\NotepadInstaller.exe >nul 2>&1
+	call :standardFileDown %notepad% "%temp%\Auto_Atualizador\NotepadInstaller.exe" "NotepadInstaller"
 	echo:
 	echo =============================
 	echo $$$ INSTALANDO NOTEPAD ++ $$$
@@ -2010,6 +1489,50 @@ REM #################### notepad ####################
 	start %temp%\Auto_Atualizador\NotepadInstaller.exe >nul 2>&1
 	exit /b
 REM #################### notepad ####################
+
+REM #################### fbrecovery ####################
+:fbrecovery
+
+	echo ===========================
+	echo *** Download FB Recovery ***
+	echo ===========================
+	echo:
+	echo ----------------------------------
+	echo Download em andamento...Aguarde...
+	echo ----------------------------------
+	call :standardFileDown %fbrecovery% "%temp%\Auto_Atualizador\SetupFBRecovery.exe" "FBRecovery"
+	echo:
+	echo ==============================
+	echo $$$ INSTALANDO FB Recovery $$$
+	echo ==============================
+	echo:
+	echo **AGUARDE, FB Recovery SENDO INSTALADO**
+	
+	start %temp%\Auto_Atualizador\SetupFBRecovery.exe >nul 2>&1
+	exit /b
+REM #################### fbrecovery ####################
+
+REM #################### rustdesk ####################
+:rustdesk
+
+	echo ===========================
+	echo *** Download RustDesk ***
+	echo ===========================
+	echo:
+	echo ----------------------------------
+	echo Download em andamento...Aguarde...
+	echo ----------------------------------
+	call :standardFileDown %rustdesk% "%temp%\Auto_Atualizador\rustdesk.exe" "RustDesk"
+	echo:
+	echo ==============================
+	echo $$$ INSTALANDO RustDesk $$$
+	echo ==============================
+	echo:
+	echo **AGUARDE, RustDesk SENDO INSTALADO**
+	
+	start %temp%\Auto_Atualizador\rustdesk.exe >nul 2>&1
+	exit /b
+REM #################### rustdesk ####################
 
 REM #################### shareprinters ####################
 :shareprinters
@@ -2024,21 +1547,165 @@ echo Aplicando Compartilhamento
 echo ==========================
 net share "PRINTERS"=C:\Windows\System32\spool\PRINTERS /grant:Todos,full /grant:REDE,full >nul 2>&1
 
-cacls C:\pdv\util\Programs\Rxtx\*.* /E /T /C /P Todos:F REDE:F >nul 2>&1
-copy C:\pdv\util\Programs\Rxtx\*.* >nul 2>&1
+cacls %FILES_FOLDER%\Programs\Rxtx\*.* /E /T /C /P Todos:F REDE:F >nul 2>&1
+copy %FILES_FOLDER%\Programs\Rxtx\*.* >nul 2>&1
 
 if exist C:\Windows\SysWOW64 (
-  copy C:\pdv\util\Programs\Rxtx\*.* C:\Windows\SysWOW64 /Y >nul 2>&1
+  copy %FILES_FOLDER%\Programs\Rxtx\*.* C:\Windows\SysWOW64 /Y >nul 2>&1
   echo ==============================
   echo Copiado para SysWOW64
   echo ==============================
 ) else (
-  copy C:\pdv\util\Programs\Rxtx\*.* C:\Windows\System32 /Y >nul 2>&1
+  copy %FILES_FOLDER%\Programs\Rxtx\*.* C:\Windows\System32 /Y >nul 2>&1
 )
 exit /b
 REM #################### shareprinters ####################
 
+REM #################### standardFileDown ####################
+:standardFileDown
+set fileLink=%~1
+set destinoFile=%~2
+set fileNamePrint=%~3
 
+echo:
+echo Baixando %fileNamePrint% ... Aguarde . . .
+
+if exist "%destinoFile%" (
+    del /q "%destinoFile%" >nul 2>&1
+)
+
+REM Verifica se curl esta disponivel
+where curl >nul 2>&1
+if %errorlevel%==0 (
+    echo [INFO] Usando CURL para download...
+    curl -L -k "%fileLink%" -o "%destinoFile%" --max-time 60
+	rem  curl -L -k "%fileLink%" -o "%destinoFile%" --max-time 60 >nul 2>&1
+
+    REM Verifica se o arquivo foi baixado e tem tamanho > 0
+    if exist "%destinoFile%" (
+        for %%A in ("%destinoFile%") do if %%~zA gtr 0 (
+            goto downloadSuccess
+        )
+    )
+
+    echo [ERRO] Falha no download com CURL.
+)
+
+REM Caso nao tenha CURL ou falhe, tenta CERTUTIL
+where certutil >nul 2>&1
+if %errorlevel%==0 (
+    REM Antes de tentar novamente, verifica se o arquivo já existe e é válido
+    if exist "%destinoFile%" (
+        for %%A in ("%destinoFile%") do if %%~zA gtr 0 (
+            goto downloadSuccess
+        )
+    )
+
+    echo [INFO] Usando CERTUTIL para download...
+    certutil -urlcache -f "%fileLink%" "%destinoFile%"
+	rem  certutil -urlcache -urlfetch -split -f "%fileLink%" "%destinoFile%" >nul 2>&1
+
+    if exist "%destinoFile%" (
+        for %%A in ("%destinoFile%") do if %%~zA gtr 0 (
+            goto downloadSuccess
+        )
+    )
+
+    goto downloadFailed
+)
+
+:downloadSuccess
+echo:
+echo Arquivo %fileNamePrint% baixado com sucesso!
+exit /b
+
+:downloadFailed
+echo Arquivo %fileNamePrint% com falha
+pause
+exit /b
+REM #################### standardFileDown ####################
+
+REM #################### standardZipExtract ####################
+call :standardZipExtract "%destinoFile%" "%fileNamePrint%" "%FILES_FOLDER%"
+:standardZipExtract
+set fileName=%~1
+set fileNameExtract_Print=%~2
+set destinoUnzip=%~3
+
+echo:
+echo Extraindo %fileNameExtract_Print% ... Aguarde . . .
+"%DIR_ATUAL%\Programs\7zip\7z.exe" x %fileName% -o%destinoUnzip% -y >nul 2>&1
+	if errorlevel 1 ( 
+	echo ---------------------------
+	echo Erro Extracao %fileName%
+	echo ---------------------------
+	pause
+	goto menu
+	)
+del /q "%destinoFile%" >nul 2>&1
+echo Extracao de %fileNameExtract_Print% encerrada
+timeout 2 >nul 2>&1
+exit /b
+REM #################### standardZipExtract ####################
+
+REM #################### javaRemover ####################
+:javaRemover
+:: Cria script PowerShell temporário
+echo:
+echo Realizando remocao de Java, aguarde...
+
+set "psfile=%temp%\remove_java.ps1"
+> "%psfile%" echo $paths = @('HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*', 'HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*')
+>>"%psfile%" echo $apps = Get-ItemProperty $paths ^| Where-Object { $_.DisplayName -like 'Java*' }
+>>"%psfile%" echo if ($apps) {
+>>"%psfile%" echo   foreach ($app in $apps) {
+>>"%psfile%" echo     Write-Host ('Removendo ' + $app.DisplayName + '...')
+>>"%psfile%" echo     if ($app.UninstallString) {
+>>"%psfile%" echo       $cmd = $app.UninstallString
+>>"%psfile%" echo       if ($cmd -match 'msiexec') {
+>>"%psfile%" echo         Start-Process -FilePath 'msiexec.exe' -ArgumentList '/x', $app.PSChildName, '/qn' -Wait
+>>"%psfile%" echo       } else {
+>>"%psfile%" echo         Start-Process -FilePath 'cmd.exe' -ArgumentList '/c', $cmd, '/qn' -Wait
+>>"%psfile%" echo       }
+>>"%psfile%" echo     }
+>>"%psfile%" echo   }
+>>"%psfile%" echo } else {
+>>"%psfile%" echo   Write-Host 'Nenhuma versao do Java encontrada.'
+>>"%psfile%" echo }
+
+:: Executa o PowerShell
+powershell -ExecutionPolicy Bypass -NoProfile -File "%psfile%"
+
+:: Remove o script temporário
+del "%psfile%" >nul 2>&1
+
+echo.
+echo Limpando pastas residuais...
+rmdir /s /q "C:\Program Files\Java" 2>nul
+rmdir /s /q "C:\Program Files (x86)\Java" 2>nul
+rmdir /s /q "%AppData%\Oracle\Java" 2>nul
+
+exit /b
+
+REM #################### javaRemover ####################
+
+REM #################### javaCheckForRemove ####################
+:javaCheckForRemove
+   if exist "C:\Program Files\Java" (
+	echo ==============================================================
+	echo ***** Java Uninstaller Download em andamento. . . Aguarde ****
+	echo ==============================================================	
+    call :javaRemover
+	)
+   if exist "C:\Program Files (x86)\Java" (
+	echo ==============================================================
+	echo ***** Java Uninstaller Download em andamento. . . Aguarde ****
+	echo ==============================================================
+	call :javaRemover
+	)
+
+	exit /b
+REM #################### javaCheckForRemove ####################
 
 REM =========================================================================
 endlocal
