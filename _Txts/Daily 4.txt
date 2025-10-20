@@ -68564,72 +68564,154 @@ WHERE vi.id_venda = vnfce.id_venda AND vi.id_venda = v.id
 =======================================================================
 
 
+10.584.432/0001-40 - MERCADO VICHINIESKI
+
+
+=======================================================================
+2452452
+2452072
+
+308123	189292	101	2025-10-10	1180192			DIFERENTE
+41251010584432000140651010011801929101892927
+41251010584432000140651010011801921101892921
+=======================================================================
+
+
+308112	312280	189285	101	2025-10-10	
+41251010584432000140651010011801851101892854	
+41251010584432000140651010011801851101892854	1180185	1180185	
+41251010584432000140651010011801859101892850	
+41251010584432000140651010011801851101892854
+35,1
+=======================================================================
+
+
+45651, 45519 - Loj8
+45060, 45291 E 45600 - LJ 3
+44656 loja 1
+
+update cotacaocliente set utilizado=true where id in (45651,45519,45060,45291,45600,44656);
+SELECT * FROM cotacaocliente where id in (45651,45519,45060,45291,45600,44656)
+
+
+=======================================================================
+
+
+1	LOJA 01	TRUE		1	01.707.818/0001-01	SUPERMERCADOS DAVITA 01	VICHESSE SGARIBOLDI SUPERMERCADOS LTDA	SANTA BARBARA DOESTE	SP	35
+
+
+=======================================================================
+
+
+01.707.818/0001-01 - DAVITA - Loja 1
+
+
+=======================================================================
+
+
+cd $HOME/.vr/integracao/vrgerenciadorifood/ ;  docker-compose -f docker-compose-gerenciadorifood.yml down
+cd $HOME/.vr/integracao/vrgerenciadorifood/ ;  docker-compose -f docker-compose-gerenciadorifood.yml up -d
+
+=======================================================================
+
+1	LOJA 01	TRUE	TRUE	1	
+08.025.880/0001-62 - ATACAREJO ANTONIO DE OZORIO
 
 
 
 =======================================================================
 
 
+SELECT * FROM mercafacil.cupomcancelamento
+WHERE id_venda IN
+(SELECT id FROM pdv.venda WHERE DATA BETWEEN '2025-10-01' AND '2025-10-15')
+
+
+
+UPDATE mercafacil.cupomcancelamento
+SET enviado=FALSE
+WHERE id_venda IN
+(SELECT id FROM pdv.venda WHERE DATA BETWEEN '2025-10-01' AND '2025-10-15');
+
+
+=======================================================================
+
+SELECT DISTINCT
+LPAD(CAST (V.ID_LOJA AS VARCHAR) , 3, '0')
+|| REPLACE(TO_CHAR(V.DATA, 'DDMMYY') , '-','')
+|| REPLACE(V.HORAINICIO::VARCHAR, ':','')  
+|| LPAD(O.ID::VARCHAR, 6, '0')
+|| V.ECF::VARCHAR  
+|| LPAD(CAST (V.NUMEROCUPOM AS VARCHAR) , 10, '0') AS CUPOM_ID,
+l.descricao,v.id_Loja,v.DATA,v.horainicio,o.id,v.ecf,v.numerocupom,v.cancelado,v.id,
+mcc.enviado
+FROM mercafacil.cupomcancelamento AS mcc 
+INNER JOIN pdv.venda AS v ON v.id=mcc.id_venda
+INNER JOIN PDV.OPERADOR O ON O.MATRICULA = V.MATRICULA AND o.id_loja=v.id_loja 
+INNER JOIN loja AS l ON l.id=v.id_loja
+WHERE 1=1
+AND v.DATA BETWEEN '2025-10-01' AND '2025-10-15'
+AND v.id IN (3153949, 3157553, 3159669, 3165733, 3173093, 3175359, 3088858, 3116891, 3124673, 3081342, 3085490, 3106810, 
+3079618, 3090674, 3106627, 3115342, 3116470, 3120631, 3081489, 3108580, 3181911, 3188893, 3128856, 3135096, 3082426, 3105011, 
+3125792, 3153047, 3088325, 3096645, 3105285, 3112091, 3131051, 3170240, 3179526, 3190033, 3078523, 3086191, 3119014, 
+3154526, 3158771, 3171193, 3171317, 3083238, 3083304, 3088509, 3088920, 3089276, 3100621, 3086251, 3098757, 3122715, 
+3129413, 3132631, 3102917, 3109265, 3118678, 3118753, 3120658, 3126363, 3127582, 3133897, 3090669, 3090671, 3090672, 
+3091562, 3102839, 3103011, 3125558, 3175014, 3184338, 3153307, 3145535, 3156398, 3157989, 3161018, 3168097, 3168165, 
+3148672, 3151325, 3166948, 3175232, 3179513, 3183957, 3189550, 3145009, 3160006, 3171920, 3145108, 3161381, 3143661, 3152005, 3183190)
+GROUP BY V.ID_LOJA, V.DATA, V.HORAINICIO, O.ID, V.ECF,
+V.NUMEROCUPOM, V.ID, mcc.enviado,l.descricao,v.cancelado,v.id;
+
+
+=======================================================================
+
+SELECT vnfce.id as "nfce_id",v.id as "venda_id",v.numerocupom,v.ecf,v.data,v.chavenfce AS "Chave_Venda",vnfce.chavenfce AS "Chave_NFCe",
+CASE WHEN v.chavenfce <> '' THEN TO_NUMBER(nullif(SUBSTRING(v.chavenfce, 26, 9), '')::VARCHAR, '999999999') END AS "Venda_Numero_NFCe",
+CASE WHEN v.chavenfce <> ''AND TO_NUMBER(nullif(SUBSTRING(v.chavenfce, 35, 1), '')::VARCHAR, '999999999') = 1 THEN 'Normal'
+	WHEN v.chavenfce <> '' AND TO_NUMBER(nullif(SUBSTRING(v.chavenfce, 35, 1), '')::VARCHAR, '999999999') = 9 THEN 'Contingencia'
+	ELSE NULL END AS "Emissao_Venda",
+CASE WHEN vnfce.chavenfce <> '' THEN TO_NUMBER(nullif(SUBSTRING(vnfce.chavenfce, 26, 9), '')::VARCHAR, '999999999') END AS "Repo_Numero_NFCe",
+CASE WHEN vnfce.chavenfce <> '' AND TO_NUMBER(nullif(SUBSTRING(vnfce.chavenfce, 35, 1), '')::VARCHAR, '999999999') = 1 THEN 'Normal'
+	WHEN vnfce.chavenfce <> '' AND TO_NUMBER(nullif(SUBSTRING(vnfce.chavenfce, 35, 1), '')::VARCHAR, '999999999') = 9 THEN 'Contingencia'
+	ELSE NULL END AS "Emissao_NFCe",
+       substring((xpath('//nfe:infNFe/@Id', xmlparse(document vnfce.xml),
+                        ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']]))[1]::text from 4) AS Primeira_ChaveXML_NFCe,
+       substring((xpath('//nfe:infNFe/@Id', xmlparse(document v.xml),
+                        ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']]))[1]::text from 4) AS Primeira_ChaveXML_Venda,
+       CASE 
+           WHEN substring((xpath('//nfe:infNFe/@Id', xmlparse(document vnfce.xml),
+                                 ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']]))[1]::text from 4)
+                <> vnfce.chavenfce
+           THEN 'DIFERENTE'
+           ELSE 'IGUAL'
+       END AS status,
+    -- 🔹 UPDATE executável para pdv.vendanfce
+    format(
+        'UPDATE pdv.vendanfce SET xml = regexp_replace(xml, %L, %L) WHERE id=%s;',
+        'Id="NFe' || substring((xpath('//nfe:infNFe/@Id', xmlparse(document vnfce.xml),
+                         ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']]))[1]::text FROM 4) || '"',
+        'Id="NFe' || vnfce.chavenfce || '"',
+        vnfce.id
+    ) AS sql_update_vendanfce_executavel,
+    -- 🔹 UPDATE executável para pdv.venda
+    format(
+        'UPDATE pdv.venda SET xml = regexp_replace(xml, %L, %L) WHERE id=%s;',
+        'Id="NFe' || substring((xpath('//nfe:infNFe/@Id', xmlparse(document v.xml),
+                         ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']]))[1]::text FROM 4) || '"',
+        'Id="NFe' || vnfce.chavenfce || '"',
+        v.id
+    ) AS sql_update_venda_executavel
+FROM pdv.vendanfce AS vnfce
+INNER JOIN pdv.venda AS v ON vnfce.id_venda=v.id
+WHERE  1=1
+AND substring((xpath('//nfe:infNFe/@Id', xmlparse(document vnfce.xml),
+                        ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']]))[1]::text from 4)
+      <> vnfce.chavenfce;
 
 
 
 =======================================================================
 
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
+Envio inicial compra CresceVendas, Comando: 157|{"registration":"64800695368","aux_coupon":"10701054517171025","items":[{"product_name":"MACARRAO BONSABOR 400G SPAGHETTI","code":"7898230897667","unit_value":2.4,"quantity":14.0},{"product_name":"SOBREPALETA SUINA S/OSSO SADIA KG","code":"447","unit_value":20.99,"quantity":13.35},{"product_name":"UVA PASSAS KG","code":"49","unit_value":32.29,"quantity":0.36},{"product_name":"CONHAQUE DREHER 900ML","code":"7896010002133","unit_value":18.99,"quantity":2.0},{"product_name":"AGUARDENTE YPIOCA 965ML CG PRATA BRA","code":"7896383730152","unit_value":11.99,"quantity":3.0},{"product_name":"VINHO QUINTA DO MORGADO 750ML TINTO SUAVE","code":"7896037913146","unit_value":13.99,"quantity":3.0}]} - Retorno: 157|200|{"response":{"code":200,"shop_id":"1017154326","discounts":{"products":[{"code":"7898230897667","unit_value":2.19,"quantity":14.0,"discount_value":2.94,"discount_item":0.21}],"subtotal":0.0},"user":{"name":"Gleuton Rodrigues Antero","total_points":3050,"total_balance":0.0,"address":{"street":"largo dos dantas","number":365,"district":"santa Teresa","adjunct":"churrascaria padre Cícero","city":"Solonópole","state":"Ceará","zipcode":"63620-000","phone":"(88) 99969-3393"},"st_token":null}}}.
 
 
 
