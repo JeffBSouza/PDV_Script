@@ -5,6 +5,7 @@
 # 1>/dev/null - Esconde apenas os retornos false, de erros
 
 # https://storage.googleapis.com/linux-pdv/Jeff/Script_Jeff.sh
+# sudo mkdir -p /pdv >/dev/null 2>&1; sudo chmod 777 -R /pdv >/dev/null 2>&1; sudo rm -rf /pdv/script.sh >/dev/null 2>&1; sudo wget -c --no-check-certificate https://storage.googleapis.com/linux-pdv/Jeff/Script_Jeff.sh -O /pdv/script.sh; sudo chmod +x /pdv/script.sh >/dev/null 2>&1; /pdv/script.sh
 
 # 25/08/2025 - Inserida funcao 19, para ajustes no Properties
 # 25/08/2025 - Ajuste na funcao 18, para identificar a vrs do Linux (AlwaysOn disponivel apenas em Linux 20.04 em diante) (Linux 16.04 e 18.04, usar o ISL_Light_Client)
@@ -4699,7 +4700,7 @@ EOF
 
     if [ ! -e "$OffScreenSaver" ]; then
 		filepermission_create "$OffScreenSaver"
-        cat <<EOF > "$OffScreenSaver"
+        cat <<EOF > "$OffScreenSaver" 2>/dev/null
 #!/bin/bash
 sleep 3
 export DISPLAY=:0.0
@@ -6180,8 +6181,8 @@ settingVRProperties_NFCe() {
 	"nfce.csc"
 	"nfce.certificado.senha"
 	"nfce.certificado.tipo=A1"
-	"nfce.tempoconexao=30"
-	"nfce.tipoambiente=1"
+	"nfce.tempoconexao="
+	"nfce.tipoambiente="
 	"nfce.certificado.diretorio"
 	"nfce.diretorio"
 	"nfce.enviaintermediador=true"
@@ -6189,8 +6190,8 @@ settingVRProperties_NFCe() {
 	"nfe.csc"
 	"nfe.certificado.senha"
 	"nfe.certificado.tipo=A1"
-	"nfe.tempoconexao=30"
-	"nfe.tipoambiente=1"
+	"nfe.tempoconexao="
+	"nfe.tipoambiente="
 	"nfe.certificado.diretorio"
 	"nfe.diretorio"
 	"repositorio.windows"
