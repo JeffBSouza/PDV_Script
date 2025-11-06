@@ -1,10 +1,12 @@
 #!/bin/bash
 
-# https://storage.googleapis.com/linux-pdv/Jeff/ISL_Server.sh
-# sudo mkdir -p /vr >/dev/null 2>&1; sudo chmod 777 /vr >/dev/null 2>&1; sudo rm -rf /vr/script.sh >/dev/null 2>&1; sudo wget -c --no-check-certificate https://storage.googleapis.com/linux-pdv/Jeff/ISL_Server.sh -O /vr/script.sh; sudo chmod +x /vr/script.sh >/dev/null 2>&1; /vr/script.sh
+# https://storage.googleapis.com/linux-pdv/Jeff/Script_Server.sh
+# sudo mkdir -p /vr >/dev/null 2>&1; sudo chmod 777 /vr >/dev/null 2>&1; sudo rm -rf /vr/script_server.sh >/dev/null 2>&1; sudo wget -c --no-check-certificate https://storage.googleapis.com/linux-pdv/Jeff/Script_Server.sh -O /vr/script_server.sh; sudo chmod +x /vr/script_server.sh >/dev/null 2>&1; /vr/script_server.sh
 
+vrs=1.0
 appsIco="https://storage.googleapis.com/linux-pdv/Jeff/LinuxFiles/img.zip"
 URLISLONELIN_LIGHTCLIENT="https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Linux/ISL_Light_ClientVR.zip"
+# URLISLONELIN_LIGHTCLIENT="https://www.islonline.net/start/ISLLightClient?custom=vrsoft-com-br"
 EXPECTFILE="/tmp/ISLExpect/islDependencias.expect"
 URLRUSTDESK="https://github.com/rustdesk/rustdesk/releases/download/1.4.2/rustdesk-1.4.2-x86_64.deb"
 rustDeskvrs="1.4.2"
@@ -16,7 +18,11 @@ APP_DIR="$HOME/.vr/integracao/vrgerenciadorifood"
 ENV_FILE="$APP_DIR/.env"
 DOCKER_COMPOSE_FILE="$APP_DIR/docker-compose-gerenciadorifood.yml"
 URL_GERENCIADORIFOOD="https://storage.googleapis.com/linux-pdv/Jeff/iFood_Files/VRGerenciadorIfood.zip"
-DESTINO_TEMP="/tmp/vrgerenciadorifood"
+javaPath_471="/usr/lib/jvm/jdk1.8.0_471/bin/java"
+javaPath_202="/usr/lib/jvm/jdk1.8.0_202/bin/java"
+javaPath_8="/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java"
+javaPath_11="/usr/lib/jvm/java-11-openjdk-amd64/bin/java"
+javaPath_8x86="/usr/lib/jvm/java-8-openjdk-i386/jre/bin/java"
 
 askSudo() {
 	clear
@@ -84,19 +90,19 @@ date '+%Y-%m-%d_%H:%M:%S'
 check_repos() {
 # Verifica se o repositório universe está habilitado
 if ! grep -q "^[^#].*universe" /etc/apt/sources.list /etc/apt/sources.list.d/*.list 2>/dev/null; then
-    echo "[INFO] - Habilitando repositório universe"
+    echo -e "\n[INFO] - Habilitando repositório universe"
     printf '%s\n' "$PASSWD" | sudo -S -p '' add-apt-repository universe -y
 fi
 
 # Verifica se o repositório multiverse está habilitado
 if ! grep -q "^[^#].*multiverse" /etc/apt/sources.list /etc/apt/sources.list.d/*.list 2>/dev/null; then
-    echo "[INFO] - Habilitando repositório multiverse"
+    echo -e "\n[INFO] - Habilitando repositório multiverse"
     printf '%s\n' "$PASSWD" | sudo -S -p '' add-apt-repository multiverse -y
 fi
 
 # Verifica se a arquitetura i386 já está adicionada
 if ! dpkg --print-foreign-architectures | grep -qw i386; then
-    echo "[INFO] - Adicionando arquitetura i386"
+    echo -e "\n[INFO] - Adicionando arquitetura i386"
     printf '%s\n' "$PASSWD" | safe_dpkg --add-architecture i386
 fi
 }
@@ -146,10 +152,10 @@ aptLockFix() {
             for lock in /var/lib/dpkg/lock-frontend /var/lib/apt/lists/lock /var/cache/apt/archives/lock; do
                 if [ -e "$lock" ]; then
                     local pids
-                    pids=$(sudo fuser "$lock" >/dev/null 2>&1)
+                    pids=$(sudo fuser "$lock" 2>/dev/null)
                     if [ -n "$pids" ]; then
                         echo "[INFO] - Matando processos que seguram $lock: $pids"
-                        sudo kill -9 $pids >/dev/null 2>&1
+                        sudo kill -9 $pids 2>/dev/null
                     fi
                 fi
             done
@@ -297,12 +303,8 @@ printf '%s\n' "$PASSWD" | sudo -S -p '' apt-get -yq install gedit
 islOnline_Dependencias(){
 	printf '%s\n' "$PASSWD" | sudo -S -p '' -v || { echo "[ERRO] - Senha incorreta"; exit 1; }
 	local commandsList=(
-    "sudo add-apt-repository universe -y"
-    "sudo add-apt-repository multiverse -y"
 	"sudo apt update"
-	"sudo dpkg --configure -a"
-	"sudo apt-get -y --fix-broken install"
-	"sudo apt-get -f -y install"
+	"comandosPreparacao"
 	"sudo ldconfig"
 	"sudo apt -y upgrade"
 	)
@@ -322,30 +324,30 @@ echo -e "\nInstalando AlwaysON"
 arquivos=( "$HOME/Downloads"/ISL_AlwaysOn* )
 
 if [ ! -e "${arquivos[0]}" ]; then
-    echo -e "\nNenhum arquivo ISL_AlwaysOn encontrado na pasta $HOME/Downloads.\nRealize o download novamente (Apenas uma vez)\nE execute o script em seguida.."
+    echo -e "\n❌ [FALHA] Nenhum arquivo ISL_AlwaysOn encontrado na pasta $HOME/Downloads.\nRealize o download novamente (Apenas uma vez)\nE execute o script em seguida.."
     pause
     exit
 elif [ "${#arquivos[@]}" -gt 1 ]; then
-    echo -e"\nExistem mais de um arquivo ISL_AlwaysOn na pasta Downloads."
-    printf '%s\n' "$PASSWD" | sudo -S -p '' rm -rf $HOME/Downloads/*.zip
-    echo -e "Arquivos Deletados !!\nAbra o Firefox e realize o download novamente (Apenas uma vez)\nE execute o script em seguida..."
+    echo -e "\nℹ️ [INFO] Existem mais de um arquivo ISL_AlwaysOn na pasta Downloads."
+    printf '%s\n' "$PASSWD" | sudo -S -p '' rm -rf "$HOME/Downloads"/ISL_AlwaysOn*
+    echo -e "ℹ️ [INFO] Arquivos Deletados !!\nAbra o Firefox e realize o download novamente (Apenas uma vez)\nE execute o script em seguida..."
     pause
     exit
 fi
 
-echo -e "Instalando dependencias AlwaysOn"
-islOnline_Dependencias
+# echo -e "Instalando dependencias AlwaysOn"
+# islOnline_Dependencias
 
 printf '%s\n' "$PASSWD" | sudo -S -p '' rm -rf "/tmp/isl-download"
-printf '%s\n' "$PASSWD" | sudo -S -p '' rm -rf "$HOME/Downloads/ISL_AlwaysOn*"
+printf '%s\n' "$PASSWD" | sudo -S -p '' rm -rf "$HOME/Downloads"/ISL_AlwaysOn*.zip
 printf '%s\n' "$PASSWD" | sudo -S -p '' mkdir -p -m 777 "/tmp/isl-download"
-printf '%s\n' "$PASSWD" | sudo -S -p '' unzip -q -o "$HOME/Downloads/ISL_AlwaysOn*" -d "/tmp/isl-download/ISL_AlwaysOn"
-printf '%s\n' "$PASSWD" | sudo -S -p '' rm -rf "$HOME/Downloads/*.zip"
+printf '%s\n' "$PASSWD" | sudo -S -p '' unzip -q -o "$HOME/Downloads/ISL_AlwaysOn*.zip" -d "/tmp/isl-download/ISL_AlwaysOn"
+printf '%s\n' "$PASSWD" | sudo -S -p '' rm -rf "$HOME/Downloads"/ISL_AlwaysOn*.zip
 shopt -s nullglob
 DESTINO="/tmp/isl-download"
 local checkFile=("$DESTINO"/*)
 if [ ${#checkFile[@]} -eq 0 ]; then
-    echo -e "\n❌ Falha na extração ou arquivo estava vazio, arquivo em $HOME/Downloads/ISL_AlwaysOn* estava vazio."
+    echo -e "\n❌ Falha na extração ou arquivo estava vazio, arquivo em $HOME/Downloads/ISL_AlwaysOn estava vazio."
     pause
     exit
 fi
@@ -387,21 +389,17 @@ LOGFILE="/tmp/install_log.txt"
 }
 
 islOnline_LightClient() {
-local FILE=/vr/isl_LightClient/ISL_Light_Client
 local DESTINO=/vr/isl_LightClient
 
 echo -e "\nInstalando LightClient"
 
     printf '%s\n' "$PASSWD" | sudo -S -p '' rm -rf $DESTINO >/dev/null 2>&1
-
     folder_create "$DESTINO"
+	printf '%s\n' "$PASSWD" | sudo -S -p '' rm -rf /tmp/ISL_Light_Client.zip >/dev/null 2>&1
 
-	if [ -e "$FILE" ]; then
-		printf '%s\n' "$PASSWD" | sudo -S -p '' rm -rf $FILE >/dev/null 2>&1
-    fi
-    printf '%s\n' "$PASSWD" | sudo -S -p '' wget -c --no-check-certificate $URLISLONELIN_LIGHTCLIENT -O $DESTINO/ISL_Light_Client.zip >/dev/null 2>&1
-	printf '%s\n' "$PASSWD" | sudo -S -p '' unzip -q -o $DESTINO/ISL_Light_Client.zip -d $DESTINO >/dev/null 2>&1
-	printf '%s\n' "$PASSWD" | sudo -S -p '' rm -rf $DESTINO/ISL_Light_Client.zip >/dev/null 2>&1
+    printf '%s\n' "$PASSWD" | sudo -S -p '' wget -c --no-check-certificate $URLISLONELIN_LIGHTCLIENT -O /tmp/ISL_Light_Client.zip >/dev/null 2>&1
+	printf '%s\n' "$PASSWD" | sudo -S -p '' unzip -q -o /tmp/ISL_Light_Client.zip -d $DESTINO/ISL_Light_Client >/dev/null 2>&1
+	printf '%s\n' "$PASSWD" | sudo -S -p '' rm -rf /tmp/ISL_Light_Client.zip >/dev/null 2>&1
     # echo "$PASSWD" | sudo -S mv $DESTINO/* $DESTINO/ISL_Light_Client >/dev/null 2>&1
 	shopt -s nullglob
     local checkFile=("$DESTINO"/*)
@@ -414,9 +412,10 @@ echo -e "\nInstalando LightClient"
     
 	printf '%s\n' "$PASSWD" | sudo -S -p '' chmod 777 -R $DESTINO >/dev/null 2>&1
 	printf '%s\n' "$PASSWD" | sudo -S -p '' chown "nobody:nogroup" -R $DESTINO >/dev/null 2>&1
-    
-    echo -e "\nInstalando dependencias LightClient"
-    islOnline_Dependencias
+    cd "$DESTINO" >/dev/null 2>&1
+    ./ISL_Light_Client
+    # echo -e "\nInstalando dependencias LightClient"
+    # islOnline_Dependencias
 }
 
 islOnline_Atalho() {
@@ -703,94 +702,197 @@ for item in "${files_folders_chown_chmod[@]}"; do
 done
 
 }
-java_x64_InstallReinstall() {
 
-echo -e "\nℹ️ [INFO] - Instalando Java 11 | Java 8 | Java jdk1.8.0_202 - [ $(dateFull_Info) ]"
-sudo apt update
-sudo apt-get install ttf-mscorefonts-installer
+java_8_471_InstallReinstall() {
 
-echo -e "\nℹ️ [INFO] - Instalando Java 8 - [ $(dateFull_Info) ]"
-sudo apt install -y openjdk-8-jdk
-echo -e "\nℹ️ [INFO] - Instalando Java 11 - [ $(dateFull_Info) ]"
-sudo apt install -y openjdk-11-jdk
+    echo -e "\nℹ️ [INFO] - Instalando Java jdk1.8.0_471 - [ $(dateFull_Info) ]"
+    sudo apt update
+    sudo apt-get install ttf-mscorefonts-installer
 
-if [ -d "/usr/lib/jvm/jdk1.8.0_202" ]; then
-    sudo rm -rf /usr/lib/jvm/jdk1.8.0_202 >/dev/null 2>&1
-fi
+    if [ -d "/usr/lib/jvm/jdk1.8.0_471" ]; then
+        sudo rm -rf /usr/lib/jvm/jdk1.8.0_471 >/dev/null 2>&1
+    fi
 
-echo -e "\nℹ️ [INFO] - Instalando Java jdk1.8.0_202 - [ $(dateFull_Info) ]"
-JAVA_JDK_URL="https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Linux/jdk-8u202-linux-x64.tar.gz"
-JAVA_JDK_FILE="/tmp/java_jdk_download/jdk-8u202-linux-x64.tar.gz"
-sudo rm -rf /tmp/java_jdk_download >/dev/null 2>&1
-sudo mkdir -m 777 /tmp/java_jdk_download >/dev/null 2>&1
-wget -O "$JAVA_JDK_FILE" "$JAVA_JDK_URL" || pause_on_error
-tar -xvzf "/tmp/java_jdk_download/jdk-8u202-linux-x64.tar.gz" -C "/tmp/java_jdk_download" >/dev/null 2>&1 || pause_on_error
+    echo -e "\nℹ️ [INFO] - Instalando Java jdk1.8.0_471 - [ $(dateFull_Info) ]"
+    JAVA_JDK_URL="https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Linux/jdk-8u471-linux-x64.tar.gz"
+    JAVA_JDK_FILE="/tmp/java_jdk_download/jdk-8u471-linux-x64.tar.gz"
+    sudo rm -rf /tmp/java_jdk_download >/dev/null 2>&1
+    sudo mkdir -m 777 /tmp/java_jdk_download >/dev/null 2>&1
+    wget -O "$JAVA_JDK_FILE" "$JAVA_JDK_URL" || pause_on_error
+    tar -xvzf "/tmp/java_jdk_download/jdk-8u471-linux-x64.tar.gz" -C "/tmp/java_jdk_download" >/dev/null 2>&1 || pause_on_error
 
-if [ ! -d "/usr/lib/jvm/" ]; then
-    sudo mkdir "/usr/lib/jvm/" >/dev/null 2>&1
-    sudo chmod 755 "/usr/lib/jvm/" >/dev/null 2>&1
-    sudo chown nobody:nogroup "/usr/lib/jvm/" >/dev/null 2>&1
-    echo
-fi
-sudo mv "/tmp/java_jdk_download/jdk1.8.0_202" "/usr/lib/jvm/" || pause_on_error
-sudo update-alternatives --install /usr/bin/java java /usr/lib/jvm/jdk1.8.0_202/bin/java 2000
+    if [ ! -d "/usr/lib/jvm/" ]; then
+        sudo mkdir "/usr/lib/jvm/" >/dev/null 2>&1
+        sudo chmod 755 "/usr/lib/jvm/" >/dev/null 2>&1
+        sudo chown nobody:nogroup "/usr/lib/jvm/" >/dev/null 2>&1
+        echo
+    fi
+    sudo mv "/tmp/java_jdk_download/jdk1.8.0_471" "/usr/lib/jvm/" || pause_on_error
+    sudo update-alternatives --install /usr/bin/java java /usr/lib/jvm/jdk1.8.0_471/bin/java 2000
+}
 
-if [ -e "/usr/lib/jvm/jdk1.8.0_202/bin/java" ]; then
-    echo -e "\nℹ️ [INFO] - Java jdk1.8.0_202 instalado com sucesso - [ $(dateFull_Info) ]"
-fi
-if [ -e "/usr/lib/jvm/java-11-openjdk-amd64/bin/java" ]; then
-    echo -e "\nℹ️ [INFO] - Java 11 instalado com sucesso - [ $(dateFull_Info) ]"
-    /usr/lib/jvm/java-11-openjdk-amd64/bin/java -version
-fi
-if [ -e "/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java" ]; then
-    echo -e "\nℹ️ [INFO] - Java 8 instalado com sucesso - [ $(dateFull_Info) ]"
-    /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java -version
-fi
+java_8_202_InstallReinstall() {
+
+    echo -e "\nℹ️ [INFO] - Instalando Java jdk1.8.0_202 - [ $(dateFull_Info) ]"
+    sudo apt update
+    sudo apt-get install ttf-mscorefonts-installer
+
+    if [ -d "/usr/lib/jvm/jdk1.8.0_202" ]; then
+        sudo rm -rf /usr/lib/jvm/jdk1.8.0_202 >/dev/null 2>&1
+    fi
+
+    echo -e "\nℹ️ [INFO] - Instalando Java jdk1.8.0_202 - [ $(dateFull_Info) ]"
+    JAVA_JDK_URL="https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Linux/jdk-8u202-linux-x64.tar.gz"
+    JAVA_JDK_FILE="/tmp/java_jdk_download/jdk-8u202-linux-x64.tar.gz"
+    sudo rm -rf /tmp/java_jdk_download >/dev/null 2>&1
+    sudo mkdir -m 777 /tmp/java_jdk_download >/dev/null 2>&1
+    wget -O "$JAVA_JDK_FILE" "$JAVA_JDK_URL" || pause_on_error
+    tar -xvzf "/tmp/java_jdk_download/jdk-8u202-linux-x64.tar.gz" -C "/tmp/java_jdk_download" >/dev/null 2>&1 || pause_on_error
+
+    if [ ! -d "/usr/lib/jvm/" ]; then
+        sudo mkdir "/usr/lib/jvm/" >/dev/null 2>&1
+        sudo chmod 755 "/usr/lib/jvm/" >/dev/null 2>&1
+        sudo chown nobody:nogroup "/usr/lib/jvm/" >/dev/null 2>&1
+        echo
+    fi
+    sudo mv "/tmp/java_jdk_download/jdk1.8.0_202" "/usr/lib/jvm/" || pause_on_error
+    sudo update-alternatives --install /usr/bin/java java /usr/lib/jvm/jdk1.8.0_202/bin/java 2000
+}
+
+java8_InstallReinstall() {
+    if [ -d "/usr/lib/jvm/java-8-openjdk-amd64" ]; then
+        javaRemover java8
+    fi
+
+    check_repos
+    sudo apt update
+    comandosPreparacao
+
+    echo -e "\nℹ️ [INFO] - Instalando Java 8 - [ $(dateFull_Info) ]"
+    printf '%s\n' "$PASSWD" | safe_apt -yq install openjdk-8-jdk
+}
+
+java11_InstallReinstall() {
+    if [ -d "/usr/lib/jvm/java-11-openjdk-amd64" ]; then
+        javaRemover java11
+    fi
+
+    check_repos
+    sudo apt update
+    comandosPreparacao
+
+    echo -e "\nℹ️ [INFO] - Instalando Java 11 - [ $(dateFull_Info) ]"
+    printf '%s\n' "$PASSWD" | safe_apt -yq install openjdk-11-jdk
 }
 
 javaPdvInstall() {
+    if [ -d "/usr/lib/jvm/java-8-openjdk-i386/jre/bin/java" ]; then
+        javaRemover javax86
+    fi
 
-	local javaFile="/usr/lib/jvm/java-8-openjdk-i386/jre/bin/java"
-	if [ ! -e "$javaFile" ]; then
-        echo -e "\nℹ️ [INFO] - Instalando java 8 i386 (x86)... - [ $(dateFull_Info) ]"
-        echo -e "\nℹ️ [INFO] - Executando preparacao de pacotes... - [ $(dateFull_Info) ]"
-        check_repos
-        sudo apt update
-        comandosPreparacao
-        echo -e "\nℹ️ [INFO] - Instalando java 8 i386 (x86)... - [ $(dateFull_Info) ]"
-		sudo apt -y install openjdk-8-jre:i386
-        if [ -e "$javaFile" ]; then
-            echo -e "\nℹ️ [INFO] - Java 8 i386 (x86) instalado com sucesso... - [ $(dateFull_Info) ]"
-        else
-            echo -e "\n❌ [FALHA] - Erro ao instalar Java8 i386 (x86)... - [ $(dateFull_Info) ]" ; pause
-        fi
-    else
-        echo -e "\nℹ️ [INFO] - Java 8 i386 (x86) ja esta instalado...Realizando remocao de java x86 - [ $(dateFull_Info) ]"
-        sudo apt-get remove -y --purge openjdk-8-jre:i386
-		sudo apt -y remove 'openjdk-8-*'
-        echo -e "\nℹ️ [INFO] - Instalando java8 i386 (x86)... - [ $(dateFull_Info) ]"
-        echo -e "\nℹ️ [INFO] - Executando preparacao de pacotes... - [ $(dateFull_Info) ]"
-        check_repos
-        sudo apt update
-        comandosPreparacao
-        echo -e "\nℹ️ [INFO] - Instalando java pdv... - [ $(dateFull_Info) ]"
-		sudo apt -y install openjdk-8-jre:i386
-        if [ -e "$javaFile" ]; then
-            echo -e "\nℹ️ [INFO] - Java 8 i386 (x86) instalado com sucesso... - [ $(dateFull_Info) ]"
-            /usr/lib/jvm/java-8-openjdk-i386/jre/bin/java -version
-        else
-            echo -e "\n❌ [FALHA] - Erro ao instalar Java8 i386 (x86)... - [ $(dateFull_Info) ]" ; pause
-        fi
-	fi
+    check_repos
+    sudo apt update
+    comandosPreparacao
+
+    echo -e "\nℹ️ [INFO] - Instalando Java 8 x86 - [ $(dateFull_Info) ]"
+    printf '%s\n' "$PASSWD" | safe_apt -yq install openjdk-8-jre:i386
 }
 
+javaCheckInstalled() {
+    local javaPath="$1"
+    local javaVRS_print="$2"
+
+    if [ -e "$javaPath" ]; then
+        echo -e "\n✅ Java $javaVRS_print instalado com sucesso - [ $(dateFull_Info) ]"
+        $javaPath -version
+    else
+        echo -e "\n❌ Java $javaVRS_print nao encontrado - [ $(dateFull_Info) ]"
+    fi
+}
+
+
 javaRemover() {
-printf '%s\n' "$PASSWD" | safe_apt -y remove 'openjdk-*'
-printf '%s\n' "$PASSWD" | safe_apt_get remove -y --purge openjdk-8-jre:i386
-printf '%s\n' "$PASSWD" | safe_apt -y remove 'openjdk-8-*'
-printf '%s\n' "$PASSWD" | safe_apt -y remove 'openjdk-11-*'
-printf '%s\n' "$PASSWD" | sudo -S -p '' update-alternatives --remove-all java
-printf '%s\n' "$PASSWD" | sudo -S -p '' update-alternatives --remove-all javac    
+    local java="$1"
+    
+    if [ -z "$java" ]; then
+        echo -e "\n❌ [ERRO] - Nenhuma versao do Java especificada para remocao."
+        echo "Uso: javaRemover [java8|java11|javax86]"
+        pause
+        return 1
+    fi
+
+    case "$java" in
+        java11)
+            echo -e "\nℹ️ [INFO] - Aguarde enquanto removemos a antiga versao do Java 11 instalada..."
+            
+            # Primeiro para processos Java se necessário
+            echo -e "ℹ️ [INFO] - Parando processos Java 11..."
+            sudo pkill -f "java-11" || true
+            
+            # Remove e depois purge para garantir
+            if printf '%s\n' "$PASSWD" | safe_apt remove openjdk-11-jdk openjdk-11-jre -y && \
+               printf '%s\n' "$PASSWD" | safe_apt purge openjdk-11-jdk openjdk-11-jre -y; then
+                # Verificar se os pacotes realmente foram removidos
+                if ! dpkg -l | grep -q "openjdk-11-jdk" && ! dpkg -l | grep -q "openjdk-11-jre"; then
+                    echo -e "✅ [SUCESSO] - Java 11 removido com sucesso!"
+                else
+                    echo -e "⚠️ [AVISO] - Comando executado, mas alguns pacotes do Java 11 ainda podem estar presentes."
+                    return 1
+                fi
+            else
+                echo -e "❌ [ERRO] - Falha ao remover Java 11!"
+                return 1
+            fi
+            ;;
+            
+        java8)
+            echo -e "\nℹ️ [INFO] - Aguarde enquanto removemos a antiga versao do Java 8 instalada..."
+            
+            # Primeiro para processos Java se necessário
+            echo -e "ℹ️ [INFO] - Parando processos Java 8..."
+            sudo pkill -f "java-8" || true
+            
+            # Remove e depois purge para garantir
+            if printf '%s\n' "$PASSWD" | safe_apt remove openjdk-8-jdk openjdk-8-jre -y && \
+               printf '%s\n' "$PASSWD" | safe_apt purge openjdk-8-jdk openjdk-8-jre -y; then
+                # Verificar se os pacotes realmente foram removidos
+                if ! dpkg -l | grep -q "openjdk-8-jdk" && ! dpkg -l | grep -q "openjdk-8-jre"; then
+                    echo -e "✅ [SUCESSO] - Java 8 removido com sucesso!"
+                else
+                    echo -e "⚠️ [AVISO] - Comando executado, mas alguns pacotes do Java 8 ainda podem estar presentes."
+                    return 1
+                fi
+            else
+                echo -e "❌ [ERRO] - Falha ao remover Java 8!"
+                return 1
+            fi
+            ;;
+            
+        javax86)
+            echo -e "\nℹ️ [INFO] - Aguarde enquanto removemos a antiga versao do Java 8 x86 instalada..."
+            
+            # Remove e depois purge para garantir
+            if printf '%s\n' "$PASSWD" | safe_apt remove openjdk-8-jre:i386 -y && \
+               printf '%s\n' "$PASSWD" | safe_apt purge openjdk-8-jre:i386 -y; then
+                # Verificar se o pacote realmente foi removido
+                if ! dpkg -l | grep -q "openjdk-8-jre:i386"; then
+                    echo -e "✅ [SUCESSO] - Java 8 x86 removido com sucesso!"
+                else
+                    echo -e "⚠️ [AVISO] - Comando executado, mas o pacote Java 8 x86 ainda pode estar presente."
+                    return 1
+                fi
+            else
+                echo -e "❌ [ERRO] - Falha ao remover Java 8 x86!"
+                return 1
+            fi
+            ;;
+            
+        *)
+            echo -e "\n❌ [ERRO] - Versao do Java invalida: $java"
+            echo "Versoes validas: java8, java11, javax86"
+            return 1
+            ;;
+    esac
 }
 
 setRestartAppsServer() {
@@ -1211,7 +1313,7 @@ propertiesFiles=( "/vr/vr.properties" "$HOME/.vr/server/vr.properties" "$HOME/.v
 for propertiesFile in "${propertiesFiles[@]}"; do
 	if [ -e "$propertiesFile" ]; then
 		local file=$propertiesFile
-		filepermission $file
+		filepermission_create "$file"
 		echo "$PASSWD" | sudo -S cp -p "$propertiesFile" "$propertiesFile.backup_$(date +%Y%m%d%H%M%S)" >/dev/null 2>&1
 
 		local patterns=(
@@ -1223,7 +1325,7 @@ for propertiesFile in "${propertiesFiles[@]}"; do
 		"mercafacil.tipoambiente"
 		)
 		clearLinesFromFile "$file" "${patterns[@]}"
-		filepermission "$file"
+		filepermission_create "$file"
 
 		echo "#================================================" >> "$file"
 		echo "gerenciadormercafacil.diasretroativos = 180" >> "$file"
@@ -1300,6 +1402,7 @@ EOF
 }
 
 download_Arquivo() {
+    local DESTINO_TEMP="/tmp/vrgerenciadorifood"
     echo ""
     echo -e "ℹ️ [INFO] Criando pastas temporarias"
     pastas_Temp
@@ -1307,7 +1410,6 @@ download_Arquivo() {
     printf '%s\n' "$PASSWD" | sudo -S -p '' wget -c --no-check-certificate $URL_GERENCIADORIFOOD -O $DESTINO_TEMP/VRGerenciadorIfood.zip 2>/dev/null
 	echo -e "ℹ️ [INFO] Extraindo Arquivos"
     printf '%s\n' "$PASSWD" | sudo -S -p '' unzip -q -o $DESTINO_TEMP/VRGerenciadorIfood.zip -d $APP_DIR 2>/dev/null
-	# printf '%s\n' "$PASSWD" | sudo -S -p '' rm -rf $DESTINO_TEMP/VRGerenciadorIfood.zip 2>/dev/null
     
     local unzip_result=$?
     local checkFile
@@ -1448,96 +1550,181 @@ config_iFood() {
     echo ""
 }
 
-menuOptions() {
+gerenciadorIfoodSetSpecificConfigs() {
+    while true; do
+        clear
+        echo ""
+        echo "1. CALCULATE_SHIPPING (Utiliza o calculo de frete nos pedidos. (Isso vai adicionar o frete do iFood no PDV))"
+        echo "2. USE_FICTIONAL_STOCK (Utiliza estoque ficticio para produtos que nao ha controle de estoque.)"
+        echo "3. SEND_PROMOTIONAL_PRICE (Realiza o envio de precos de Oferta dos produtos.)"
+        echo "4. Retornar ao Menu principal"
+        echo "5. SAIR"
+        read -p "Opcao: " OPTIFOODSETSPECIFICCONFIGS
+
+        case "$OPTIFOODSETSPECIFICCONFIGS" in
+            1) PARAMETRO="CALCULATE_SHIPPING" ;;
+            2) PARAMETRO="USE_FICTIONAL_STOCK" ;;
+            3) PARAMETRO="SEND_PROMOTIONAL_PRICE" ;;
+            4) menuOptions; return ;;
+            5) exit ;;
+            *) echo "❌ Opcao invalida."; sleep 1; continue ;;
+        esac
+
+        echo ""
+        read -p "Informe o ID LOJA do portal GerenciadorIfood Pedidos: " IDLOJAIFOODPEDIDOS
+        echo ""
+        echo "1. ATIVAR (TRUE)"
+        echo "2. DESATIVAR (FALSE)"
+        read -p "Opcao: " OTPIFOOD2
+
+        case "$OTPIFOOD2" in
+            1) VALOR="true" ;;
+            2) VALOR="false" ;;
+            *) echo "❌ Opcao invalida."; sleep 1; continue ;;
+        esac
+
+        if [ -z "$PARAMETRO" ] || [ -z "$IDLOJAIFOODPEDIDOS" ] || [ -z "$VALOR" ]; then
+            echo -e "❌ [FALHA] Erro: Todos os campos sao obrigatorios!"
+            sleep 2
+            continue
+        fi
+
+        echo ""
+        echo "➡️ Enviando configuração..."
+        curl --location 'http://localhost:9031/VRGerenciadorIfood/config/parameter' \
+            --header 'Content-Type: application/json' \
+            --data "{
+                \"paramName\": \"$PARAMETRO\",
+                \"storeId\": $IDLOJAIFOODPEDIDOS,
+                \"value\": $VALOR
+            }"
+        echo ""
+        read -p "Pressione ENTER para continuar..." 
+    done
+}
+
+menuJava() {
     clear
 	echo -e "\n==============================="
-	echo -e "Nome da maquina: $(uname -n)"
-	echo "1. AlwaysOn (Necessario download do ISL_AlwaysOn via firefox previamente)"
-	echo "2. ISL_Light_Client - Acesso monitorado e unico"
-	echo "3. Dependencias ISL (Light Client e AlwaysOn)"
-    echo "4. Instalar Firefox"
-    echo "5. Instalar RustDesk"
-    echo "6. Instalar/Reinstalar Firebird para Concentrador"
-    echo "7. Instalar/Reinstalar Java 11 | Java 8 | Java jdk1.8.0_202 (x64 | amd64)"
-    echo "8. Instalar/Reinstalar Java x86"
-    echo "9. Listar javas com update-alternatives --list java"
-	echo "10. Config Restart App [Concentrador, Autorizador]"
-    echo "11. Config MercafacilCRM"
-    echo "12. Instalar o VRGerenciadorIFood"
-    echo "13. Alterar Versao VRGerenciadorIFood"
-    echo "14. Alterar Configs Banco VR no .env"
-    echo "15. Iniciar container VRGrenciadorIfood"
-    echo "16. Reiniciar container VRGrenciadorIfood"
-    echo "17. Desativar o VRGerenciadorIFood"
-    echo "18. Deslogar forçado do portal VRGerenciadorIFood"
-    echo "19. SAIR"
-	read -p "Opcao: " OPTISLMENU
+    echo "1. Instalar/Reinstalar Java 8 | Java 11 | Java jdk1.8.0_202 (x64 | amd64) | Java jdk1.8.0_471 (x64 | amd64)"
+    echo "2. Instalar/Reinstalar Java 11"
+    echo "3. Instalar/Reinstalar Java 8"
+    echo "4. Instalar/Reinstalar Java jdk1.8.0_202 (x64 | amd64)"
+    echo "5. Instalar/Reinstalar Java jdk1.8.0_471 (x64 | amd64)"
+    echo "6. Instalar/Reinstalar Java x86"
+    echo "7. Listar javas com update-alternatives --list java"
+    echo "8. Configurar java com update-alternatives --config java"
+    echo "9. Remover Java 11"
+    echo "10. Remover Java 8"
+    echo "11. Remover Java x86"
+    echo "12. Retornar Menu Principal"
+    echo "13. SAIR"
+	read -p "Opcao: " OPTJAVAMENU
 
-	if [ -z "$OPTISLMENU" ] || ! [[ "$OPTISLMENU" =~ ^[0-9]+$ ]]; then
-        echo -e "\nErro: você deve escolher uma opcao valida." ; sleep 2 ; menuOptions
+	if [ -z "$OPTJAVAMENU" ] || ! [[ "$OPTJAVAMENU" =~ ^[0-9]+$ ]]; then
+        echo -e "\nErro: voce deve escolher uma opcao valida." ; sleep 2 ; menuJava
 	fi
-	if [ $OPTISLMENU -eq 1 ]; then
-        islOnlineType=AlwaysOn
-        islOnline_AlwaysOn
-        islOnline_Atalho
+	if [ $OPTJAVAMENU -eq 1 ]; then
+        echo -e "\nInstalar/Reinstalar Java 8 | Java 11 | Java jdk1.8.0_202 (x64 | amd64) | Java jdk1.8.0_471 (x64 | amd64)"
+        java8_InstallReinstall
+        echo ""
+        java11_InstallReinstall
+        echo ""
+        java_8_202_InstallReinstall
+        echo ""
+        java_8_471_InstallReinstall
+
+        javaCheckInstalled "$javaPath_8" "8"
+        javaCheckInstalled "$javaPath_11" "11"
+        javaCheckInstalled "$javaPath_202" "8_202"
+        javaCheckInstalled "$javaPath_471" "8_471"
         finished ; pause ; menuOptions
 	fi
-	if [ $OPTISLMENU -eq 2 ]; then
-        islOnlineType=LightClient
-        islOnline_LightClient
-        islOnline_Atalho
+	if [ $OPTJAVAMENU -eq 2 ]; then
+    echo -e "\nℹ️ [INFO] - Instalacao/Reinstalacao Java 11 - [ $(dateFull_Info) ]"
+        java11_InstallReinstall
+        javaCheckInstalled "$javaPath_11" "11"
         finished ; pause ; menuOptions
 	fi
-	if [ $OPTISLMENU -eq 3 ]; then
-        echo -e "\nInstalando dependencias ISL"
-        islOnline_Dependencias
+	if [ $OPTJAVAMENU -eq 3 ]; then
+    echo -e "\nℹ️ [INFO] - Instalacao/Reinstalacao Java 8 - [ $(dateFull_Info) ]"
+        java8_InstallReinstall
+        javaCheckInstalled "$javaPath_8" "8"
         finished ; pause ; menuOptions
 	fi
-	if [ $OPTISLMENU -eq 4 ]; then
-	    firefox
+	if [ $OPTJAVAMENU -eq 4 ]; then
+    echo -e "\nℹ️ [INFO] - Instalacao/Reinstalacao Java 8_202 - [ $(dateFull_Info) ]"
+        java_8_202_InstallReinstall
+        javaCheckInstalled "$javaPath_202" "8_202"
         finished ; pause ; menuOptions
 	fi
-	if [ $OPTISLMENU -eq 5 ]; then
-	    rustdeskInstallReinstall
+	if [ $OPTJAVAMENU -eq 5 ]; then
+    echo -e "\nℹ️ [INFO] - Instalacao/Reinstalacao Java 8_471 - [ $(dateFull_Info) ]"
+        java_8_471_InstallReinstall
+        javaCheckInstalled "$javaPath_471" "8_471"
         finished ; pause ; menuOptions
 	fi
-	if [ $OPTISLMENU -eq 6 ]; then
-	    firebirdPDVInstall
+	if [ $OPTJAVAMENU -eq 6 ]; then
+    echo -e "\nℹ️ [INFO] - Instalacao/Reinstalacao Java 8 x86 - [ $(dateFull_Info) ]"
+        javaPdvInstall
+        javaCheckInstalled "$javaPath_8x86" "8_x86/i386"
         finished ; pause ; menuOptions
 	fi
-	if [ $OPTISLMENU -eq 7 ]; then
-	    java_x64_InstallReinstall
-        finished ; pause ; menuOptions
-	fi
-	if [ $OPTISLMENU -eq 8 ]; then
-	    javaPdvInstall
-        finished ; pause ; menuOptions
-	fi
-	if [ $OPTISLMENU -eq 9 ]; then
+	if [ $OPTJAVAMENU -eq 7 ]; then
         echo ""
 	    update-alternatives --list java
         pause ; menuOptions
 	fi
-	if [ $OPTISLMENU -eq 10 ]; then
-	    setRestartAppsServer
+	if [ $OPTJAVAMENU -eq 8 ]; then
+        echo ""
+        update-alternatives --config java
+        exit
+	fi
+	if [ $OPTJAVAMENU -eq 9 ]; then
+        javaRemover java11
         pause ; menuOptions
 	fi
-	if [ $OPTISLMENU -eq 11 ]; then
-        clear
-        echo -e "\n============================================"
-        echo -e "Assistente de configuracao MercafacilCRM Linux\n"
-        valida_execPath
-        create_shortcutMercafacilCRM
-        install_update_Gnome
-        settingVRProperties_Mercafacil
-        checkFiles
-        finished
+	if [ $OPTJAVAMENU -eq 10 ]; then
+        javaRemover java8
+        pause ; menuOptions
+	fi
+	if [ $OPTJAVAMENU -eq 11 ]; then
+        javaRemover javax86
+        pause ; menuOptions
+	fi
+	if [ $OPTJAVAMENU -eq 12 ]; then
         menuOptions
 	fi
-    if [ $OPTMENUOPTIONS -eq 12 ]; then
+	if [ $OPTJAVAMENU -eq 13 ]; then
+        exit
+	fi
+	if [ $OPTJAVAMENU -ge 14 ]; then
+	echo -e "\nOpcao incorreta, retornando ao menu principal" ; pause ; menuJava
+	fi
+}
+
+menuGerenciadorIfood() {
+    clear
+	echo -e "\n==============================="
+    echo "1. Instalar o VRGerenciadorIFood"
+    echo "2. Alterar Versao VRGerenciadorIFood"
+    echo "3. Alterar Configs Banco VR no .env - VRGerenciadorIFood"
+    echo "4. Iniciar container VRGerenciadorIFood"
+    echo "5. Reiniciar container VRGerenciadorIFood"
+    echo "6. Desativar o VRGerenciadorIFood"
+    echo "7. Deslogar forçado do portal VRGerenciadorIFood"
+    echo "8. Ativa/Desativa: Frete / Estoque / Preco Oferta"
+    echo "9. Retornar Menu Principal"
+    echo "10. SAIR"
+	read -p "Opcao: " OPTGERIFOODMENU
+
+	if [ -z "$OPTGERIFOODMENU" ] || ! [[ "$OPTGERIFOODMENU" =~ ^[0-9]+$ ]]; then
+        echo -e "\nErro: voce deve escolher uma opcao valida." ; sleep 2 ; menuGerenciadorIfood
+	fi
+    if [ $OPTGERIFOODMENU -eq 1 ]; then
         config_iFood ; criar_Atalho_PortalPedidos ; finished ; pause ; menuOptions
     fi
-    if [ $OPTMENUOPTIONS -eq 13 ]; then
+    if [ $OPTGERIFOODMENU -eq 2 ]; then
         echo ""
         read -p "Digite a Versao VRGerenciadorIFood (formato: X.X.X): " VERSAO
         # Remover espaços extras
@@ -1569,7 +1756,7 @@ menuOptions() {
         echo "Versao validada: $VERSAO"
         atualizar_docker_compose ; finished ; pause ; menuOptions
     fi
-    if [ $OPTMENUOPTIONS -eq 14 ]; then
+    if [ $OPTGERIFOODMENU -eq 3 ]; then
         echo ""
         read -p "Digite o DATABASE_IP: " DATABASE_IP
         read -p "Digite o DATABASE_PORTA: " DATABASE_PORTA
@@ -1584,37 +1771,123 @@ menuOptions() {
         fi
         finished ; pause ; menuOptions
     fi
-    if [ $OPTMENUOPTIONS -eq 15 ]; then
+    if [ $OPTGERIFOODMENU -eq 4 ]; then
         echo ""
         echo "Iniciando containers..."
         cd $HOME/.vr/integracao/vrgerenciadorifood/
         sudo docker compose -f docker-compose-gerenciadorifood.yml up -d
         finished ; menuOptions
     fi
-    if [ $OPTMENUOPTIONS -eq 16 ]; then
+    if [ $OPTGERIFOODMENU -eq 5 ]; then
         echo ""
         echo "Reiniciando containers..."
         cd $HOME/.vr/integracao/vrgerenciadorifood/
         sudo docker compose -f docker-compose-gerenciadorifood.yml restart
         finished ; menuOptions
     fi
-    if [ $OPTMENUOPTIONS -eq 17 ]; then
+    if [ $OPTGERIFOODMENU -eq 6 ]; then
         echo ""
         echo "Parando containers..."
         cd $HOME/.vr/integracao/vrgerenciadorifood/
         docker compose -f docker-compose-gerenciadorifood.yml stop
         finished ; menuOptions
     fi
-    if [ $OPTISLMENU -eq 18 ]; then
+    if [ $OPTGERIFOODMENU -eq 7 ]; then
 	    echo ""
         curl -X POST http://localhost:9031/VRGerenciadorIfood/auth/logout
         finished ; menuOptions
 	fi
-	if [ $OPTISLMENU -eq 19 ]; then
+    if [ $OPTGERIFOODMENU -eq 8 ]; then
+        gerenciadorIfoodSetSpecificConfigs ; menuOptions
+    fi
+
+	if [ $OPTGERIFOODMENU -eq 9 ]; then
+        menuOptions
+	fi
+	if [ $OPTGERIFOODMENU -eq 10 ]; then
+        exit
+	fi
+	if [ $OPTGERIFOODMENU -ge 11 ]; then
+	echo -e "\nOpcao incorreta, retornando ao menu principal" ; pause ; menuGerenciadorIfood
+	fi
+}
+
+menuOptions() {
+    clear
+    echo -e "\n=======================vrs: $vrs"
+	echo -e "Nome da maquina: $(uname -n) / IP: $(hostname -I)\n"
+	echo "1. AlwaysOn (Necessario download do ISL_AlwaysOn via firefox previamente)"
+	echo "2. ISL_Light_Client - Acesso monitorado e unico"
+	echo "3. Dependencias ISL (Light Client e AlwaysOn)"
+    echo "4. Instalar Firefox"
+    echo "5. Instalar RustDesk"
+    echo "6. Instalar/Reinstalar Firebird para Concentrador"
+    echo "7. Menu Java"
+    echo "8. Menu VRGerenciador Ifood"
+	echo "9. Config Auto Restart App [Concentrador, Autorizador]"
+    echo "10. Config MercafacilCRM"
+    echo "11. SAIR"
+	read -p "Opcao: " OPTISLMENU
+
+	if [ -z "$OPTISLMENU" ] || ! [[ "$OPTISLMENU" =~ ^[0-9]+$ ]]; then
+        echo -e "\nErro: voce deve escolher uma opcao valida." ; sleep 2 ; menuOptions
+	fi
+	if [ $OPTISLMENU -eq 1 ]; then
+        islOnlineType=AlwaysOn
+        islOnline_AlwaysOn
+        # islOnline_Atalho
+        finished ; pause ; menuOptions
+	fi
+	if [ $OPTISLMENU -eq 2 ]; then
+        islOnlineType=LightClient
+        islOnline_LightClient
+        islOnline_Atalho
+        finished ; pause ; menuOptions
+	fi
+	if [ $OPTISLMENU -eq 3 ]; then
+        echo -e "\nInstalando dependencias ISL"
+        islOnline_Dependencias
+        finished ; pause ; menuOptions
+	fi
+	if [ $OPTISLMENU -eq 4 ]; then
+	    firefox
+        finished ; pause ; menuOptions
+	fi
+	if [ $OPTISLMENU -eq 5 ]; then
+	    rustdeskInstallReinstall
+        finished ; pause ; menuOptions
+	fi
+	if [ $OPTISLMENU -eq 6 ]; then
+	    firebirdPDVInstall
+        finished ; pause ; menuOptions
+	fi
+	if [ $OPTISLMENU -eq 7 ]; then
+	    menuJava
+	fi
+	if [ $OPTISLMENU -eq 8 ]; then
+	    menuGerenciadorIfood
+	fi
+	if [ $OPTISLMENU -eq 9 ]; then
+	    setRestartAppsServer
+        pause ; menuOptions
+	fi
+	if [ $OPTISLMENU -eq 10 ]; then
+        clear
+        echo -e "\n============================================"
+        echo -e "Assistente de configuracao MercafacilCRM Linux\n"
+        valida_execPath
+        create_shortcutMercafacilCRM
+        install_update_Gnome
+        settingVRProperties_Mercafacil
+        checkFiles
+        finished
+        menuOptions
+	fi
+	if [ $OPTISLMENU -eq 11 ]; then
 	    exit
 	fi
-	if [ $OPTISLMENU -ge 20 ]; then
-	echo -e "\nOpcao incorreta, retornando ao menu principal" ; pause ; menuOptions
+	if [ $OPTISLMENU -ge 12 ]; then
+	echo -e "\nOpcao incorreta, retorne ao menu principal" ; pause ; menuOptions
 	fi
 }
 

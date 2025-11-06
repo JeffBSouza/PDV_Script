@@ -343,6 +343,94 @@ Remoção do thread sleep para o estado CE ao verificar o serviço do NFC-e
 
 ## v4.3.8-109
 SUS-2720
+
+Segue a entrega da tarefa:
+SUS-2457 | Ajuste SINIEF nº 11/2025 - Não emitir Cupom Fiscal para CNPJ - 03 de Novembro
+
+VRFramework_4.4.6-20
+VRFramework_4.3.11-25
+
+VRMaster_4.3.72-0
+VRMaster_4.4.54-0
+
+VRPdv_4.3.8-112
+VRPdv_4.4.0-71
+Prezadas equipes,
+Com a publicação do Ajuste SINIEF nº 30/2025, a vedação de emissão de NFC-e (modelo 65) para destinatários pessoas jurídicas (CNPJ), que estava prevista para 03/11/2025, foi postergada para 05/01/2026.
+Importante: A partir de 05/01/2026, todas as vendas realizadas a CNPJs deverão ser emitidas via NF-e (modelo 55). Até lá, ainda é possível emitir NFC-e, mas recomendamos que as unidades comecem a adequar suas operações, garantindo mais tranquilidade e conformidade fiscal a partir de janeiro/26.
+
+1. Contexto Legal
+Conforme o Ajuste SINIEF nº 19/16, §4º:
+“Nas operações com mercadorias em que o destinatário precise ser identificado pelo Cadastro Nacional da Pessoa Jurídica – CNPJ, deverá ser utilizada a Nota Fiscal eletrônica – NF-e, modelo 55.”
+Até 05/01/2026, ainda é possível emitir NFC-e para CNPJs, mas a adequação antecipada é recomendada.
+Procedimento em caso de contingência ou rejeição de NFC-e:
+Acesse o repositório de NFC-e;
+Localize o cupom rejeitado;
+Efetue a inutilização da sequência do cupom;
+Se necessário, emita a NF-e seguindo o fluxo de importação de cupons cancelados.
+
+2. Emissão Direta de NF-e no PDV
+O PDV permite emitir NF-e sem passar pelo fluxo NFC-e. Para configurar:
+Acesse: PDV > Parâmetro > Geral > Configurações, bloco NF-e
+Habilite a opção “Emite”
+Configure os Tipos de Saída: Geral, Consumidor Final e A Prazo
+Essa configuração evita rejeições por NFC-e quando o destinatário for pessoa jurídica.
+
+
+3. Configuração do Tipo de Saída
+3.1 Quando utiliza estoque online
+Estoque e financeiro já são efetivados; não são estornados se cupom for inutilizado
+
+Configuração recomendada:
+Adiciona Venda: Sim
+Gera Receber: Não
+Baixa Estoque: Não
+
+3.2 Quando não utiliza estoque online
+Estoque e financeiro são efetivados; estoque será desfeito se cupom for inutilizado
+
+Configuração recomendada:
+Adiciona Venda: Sim
+Baixa Estoque: Sim
+Gera Receber: Não
+
+Observação: Desmarcar “Ref. Cupom Fiscal” na aba Dados Fiscais.
+
+
+4. Novo Parâmetro no PDV (Melhoria)
+“Ao informar CNPJ, obrigar emissão de NF-e”
+Direciona automaticamente para NF-e (modelo 55)
+Impede a seleção do fluxo NFC-e para CNPJs
+Só pode ser habilitado se “Utiliza NF-e” estiver marcado e o Tipo de Saída definido
+
+
+5. Importação de Cupons Cancelados na NF-e (Melhoria)
+Ao emitir NF-e em Nota Saída > Emissão, clique em: Importar > Cupom
+Mensagem atual: “Este cupom está cancelado. Deseja importá-lo mesmo assim?”
+
+Opções:
+Sim: importa o cupom cancelado para a NF-e
+Não: mantém o fluxo atual
+
+Esse passo também deve ser seguido para vendas em NFC-e rejeitadas.
+
+
+6. Boas Práticas
+Garantir que o parâmetro “Ao informar CNPJ, obrigar emissão de NF-e” esteja habilitado;
+Treinar equipes sobre a obrigatoriedade de NF-e para CNPJs;
+Revisar os Tipos de Saída antes de iniciar operações;
+Em casos de rejeição de NFC-e: inutilizar o cupom e importar como NF-e se necessário;
+Para dúvidas ou ajustes, abrir ticket com a Alliance, informando unidade, tipo de operação e se utiliza estoque online.
+As melhorias estarão disponíveis a partir das versões lançadas em 20/10/2025:
+
+
+SUS-2630 || VRPdv - Ajuste descontos
+
+VRPdv_4.3.8-114
+VRPdv_4.4.0-74
+
+Link para download:
+https://drive.google.com/drive/folders/1x8Rt1LagojF04c8zIccZ0WQhS_fkmXWo?usp=drive_link
 ########################################################################################
 VRMonitor
 
@@ -4070,12 +4158,16 @@ AND contingencia=TRUE AND transmitido=TRUE AND id_situacaonfce=2
 AND datahoraemissaonfce::date >= '2025-09-14';
 ===========================================================================
 ## Rejeicao data-hora emissao posterior ao horario de recebimento
-SELECT STRING_AGG(v.horainicio || ' / ' || v.horatermino, ', ') AS "Hora_Inicio/Termino",
+SELECT 
+v.id, v.numerocupom, v.ecf, v.data, v.id_loja,
+STRING_AGG(v.horainicio || ' / ' || v.horatermino, ', ') AS "Hora_Inicio/Termino",
 v.datahoraemissaonfce,vnfce.datahoraemissaonfce, now()
 FROM pdv.venda AS v
 INNER JOIN pdv.vendanfce AS vnfce ON v.id=vnfce.id_venda
-WHERE ecf IN (X) AND DATA = '202X-XX-XX' AND numerocupom=XX
-GROUP BY v.horainicio,v.horatermino,v.datahoraemissaonfce,vnfce.datahoraemissaonfce;
+WHERE vnfce.transmitido=false and vnfce.contingencia=true and vnfce.id_situacaonfce <> 1
+and v.data >='2025-10-01'
+GROUP BY v.horainicio,v.horatermino,v.datahoraemissaonfce,vnfce.datahoraemissaonfce,
+v.id, v.numerocupom, v.ecf, v.data, v.id_loja;
 ===========================================================================
 /*Identifica vendas que nao estejam com status de pendente transmitir correto, status nfce*/
 SELECT
@@ -6278,7 +6370,8 @@ WHERE v.DATA >='2025-06-01'
   AND v.xml ILIKE '%<xMotivo>Auorizado o uso%';
 
 =======================================================================
-## insere chavenfce dentro do XML (primeiro campo de chave)
+## Primeira chave diferente da vendanfce e chavenfce da venda <> chavenfce da vendanfce
+nieski
 
 SELECT vnfce.id as "nfce_id",v.id as "venda_id",v.numerocupom,v.ecf,v.data,v.chavenfce AS "Chave_Venda",vnfce.chavenfce AS "Chave_NFCe",
 CASE WHEN v.chavenfce <> '' THEN TO_NUMBER(nullif(SUBSTRING(v.chavenfce, 26, 9), '')::VARCHAR, '999999999') END AS "Venda_Numero_NFCe",
@@ -6297,42 +6390,99 @@ CASE WHEN vnfce.chavenfce <> '' AND TO_NUMBER(nullif(SUBSTRING(vnfce.chavenfce, 
            WHEN substring((xpath('//nfe:infNFe/@Id', xmlparse(document vnfce.xml),
                                  ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']]))[1]::text from 4)
                 <> vnfce.chavenfce
-           THEN 'DIFERENTE'
-           ELSE 'IGUAL'
-       END AS status,
+           THEN 'DIFERENTE' ELSE 'IGUAL' END AS status,
     -- ?? UPDATE executável para pdv.vendanfce
-    format(
+CASE WHEN substring((
+            xpath('//nfe:infNFe/@Id', xmlparse(document vnfce.xml),
+                  ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']])
+        )[1]::text FROM 4) <> vnfce.chavenfce AND v.chavenfce = vnfce.chavenfce
+    THEN format(
         'UPDATE pdv.vendanfce SET xml = regexp_replace(xml, %L, %L) WHERE id=%s;',
-        'Id="NFe' || substring((xpath('//nfe:infNFe/@Id', xmlparse(document vnfce.xml),
-                         ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']]))[1]::text FROM 4) || '"',
+        'Id="NFe' || substring((
+            xpath('//nfe:infNFe/@Id', xmlparse(document vnfce.xml),
+                  ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']])
+        )[1]::text FROM 4) || '"',
         'Id="NFe' || vnfce.chavenfce || '"',
         vnfce.id
-    ) AS sql_update_vendanfce_executavel,
+    )
+    ELSE NULL END AS sql_update_vendanfce_executavel,
     -- ?? UPDATE executável para pdv.venda
-    format(
+CASE WHEN substring((
+            xpath('//nfe:infNFe/@Id', xmlparse(document v.xml),
+                  ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']])
+        )[1]::text FROM 4) <> vnfce.chavenfce AND v.chavenfce = vnfce.chavenfce
+    THEN format(
         'UPDATE pdv.venda SET xml = regexp_replace(xml, %L, %L) WHERE id=%s;',
-        'Id="NFe' || substring((xpath('//nfe:infNFe/@Id', xmlparse(document v.xml),
-                         ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']]))[1]::text FROM 4) || '"',
-        'Id="NFe' || vnfce.chavenfce || '"',
+        'Id="NFe' || substring((
+            xpath('//nfe:infNFe/@Id', xmlparse(document v.xml),
+                  ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']])
+        )[1]::text FROM 4) || '"',
+        'Id="NFe' || v.chavenfce || '"',
         v.id
-    ) AS sql_update_venda_executavel
+    )
+    ELSE NULL END AS sql_update_venda_executavel,
+CASE WHEN v.chavenfce <> vnfce.chavenfce THEN 
+        'UPDATE pdv.vendanfce SET chavenfce = ''' || v.chavenfce || ''' WHERE id = ' || vnfce.id || ';'
+END AS sql_update
 FROM pdv.vendanfce AS vnfce
 INNER JOIN pdv.venda AS v ON vnfce.id_venda=v.id
 WHERE  1=1
-AND substring((xpath('//nfe:infNFe/@Id', xmlparse(document vnfce.xml),
-                        ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']]))[1]::text from 4)
-      <> vnfce.chavenfce
-AND v.id=450976;
+and v.data >= '2025-07-01'
+AND v.chavenfce in ('41250910584432000140651010011758801101847396');
+
+## Compara chavenfce do começo do xml com a chavenfce da autorizacao e tbm informa caso nao tenha autorizacao
+SELECT vnfce.id as "nfce_id",v.id as "venda_id",v.numerocupom,v.ecf,v.data,v.chavenfce AS "Chave_Venda",vnfce.chavenfce AS "Chave_NFCe",
+CASE WHEN v.chavenfce <> '' THEN TO_NUMBER(nullif(SUBSTRING(v.chavenfce, 26, 9), '')::VARCHAR, '999999999') END AS "Venda_Numero_NFCe",
+CASE WHEN v.chavenfce <> ''AND TO_NUMBER(nullif(SUBSTRING(v.chavenfce, 35, 1), '')::VARCHAR, '999999999') = 1 THEN 'Normal'
+	WHEN v.chavenfce <> '' AND TO_NUMBER(nullif(SUBSTRING(v.chavenfce, 35, 1), '')::VARCHAR, '999999999') = 9 THEN 'Contingencia'
+	ELSE NULL END AS "Emissao_Venda",
+CASE WHEN vnfce.chavenfce <> '' THEN TO_NUMBER(nullif(SUBSTRING(vnfce.chavenfce, 26, 9), '')::VARCHAR, '999999999') END AS "Repo_Numero_NFCe",
+CASE WHEN vnfce.chavenfce <> '' AND TO_NUMBER(nullif(SUBSTRING(vnfce.chavenfce, 35, 1), '')::VARCHAR, '999999999') = 1 THEN 'Normal'
+	WHEN vnfce.chavenfce <> '' AND TO_NUMBER(nullif(SUBSTRING(vnfce.chavenfce, 35, 1), '')::VARCHAR, '999999999') = 9 THEN 'Contingencia'
+	ELSE NULL END AS "Emissao_NFCe",
+    CASE 
+        WHEN vnfce.xml IS NULL OR vnfce.xml NOT LIKE '<%' THEN 'XML INVÁLIDO'
+        WHEN NOT xml_is_well_formed_document(vnfce.xml) THEN 'XML INVÁLIDO'
+        ELSE substring((
+            xpath('//nfe:infNFe/@Id', xmlparse(document vnfce.xml),
+                  ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']])
+        )[1]::text FROM 4)
+    END AS infnfe_id,
+    CASE 
+        WHEN vnfce.xml IS NULL OR vnfce.xml NOT LIKE '<%' THEN NULL
+        WHEN NOT xml_is_well_formed_document(vnfce.xml) THEN NULL
+        ELSE (xpath('//nfe:protNFe/nfe:infProt/nfe:chNFe/text()', 
+                    xmlparse(document vnfce.xml),
+                    ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']])
+              )[1]::text
+    END AS chnfe,
+    CASE 
+        WHEN vnfce.xml IS NULL OR vnfce.xml NOT LIKE '<%' THEN 'XML INVÁLIDO'
+        WHEN NOT xml_is_well_formed_document(vnfce.xml) THEN 'XML INVÁLIDO'
+        WHEN (xpath('//nfe:protNFe/nfe:infProt/nfe:chNFe/text()', 
+                    xmlparse(document vnfce.xml),
+                    ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']])
+              )[1] IS NULL THEN 'CHAVE NÃO EXISTE'
+        WHEN substring((
+                xpath('//nfe:infNFe/@Id', xmlparse(document vnfce.xml),
+                      ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']])
+            )[1]::text FROM 4)
+             <> (
+                xpath('//nfe:protNFe/nfe:infProt/nfe:chNFe/text()', 
+                      xmlparse(document vnfce.xml),
+                      ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']])
+            )[1]::text
+             THEN 'DIFERENTE'
+        ELSE 'IGUAL'
+    END AS status
+FROM pdv.vendanfce AS vnfce
+INNER JOIN pdv.venda AS v ON vnfce.id_venda = v.id
+WHERE v.data >= '2025-09-01' AND v.cancelado = FALSE;
 
 
-UPDATE pdv.vendanfce SET transmitido=FALSE, contingencia=TRUE, id_situacaonfce=0 WHERE id IN
-(301367);
+UPDATE pdv.vendanfce SET transmitido=FALSE, contingencia=TRUE, id_situacaonfce=0 WHERE id_venda IN ();
 
-UPDATE pdv.vendanfce SET transmitido=FALSE, contingencia=TRUE, id_situacaonfce=0 WHERE id IN
-(301371,301368,301369,301370,298912,298886,308123,308449,308018,308095,308118,308146,308354,308405,308432,308444,299685,299639,299910,299921,299894,300890,300887,286923,308112,308114);
-
-
-
+UPDATE pdv.vendanfce SET transmitido=FALSE, contingencia=TRUE, id_situacaonfce=0 WHERE id IN ();
 
 =======================================================================
 =======================================================================
@@ -6863,6 +7013,8 @@ touchscreen.resolucaoreduzida=true
 tokentls=123-123-123-123
 connect.webserviceoffline=true
 biometria.sensibilidade=
+gerenciadornfce.intervalotransmissao
+
 
 monitor.habilita=true
 monitor.habilita=false
@@ -6976,6 +7128,7 @@ id_parametro in (2,151,61);.
 
 ==============================
 ## Traz Numeros Cupons no vrmaster
+# encontra cupons
 SELECT
 STRING_AGG(CAST(v.numerocupom AS VARCHAR), ', ') AS cupons
 FROM pdv.venda AS v
@@ -8868,7 +9021,7 @@ WHERE v.id = vnfce.id_venda
   
   
   
-  SELECT
+SELECT
 v.id,v.ecf,v.DATA,v.id_loja,v.horatermino,
 v.datahoraemissaonfce,vnfce.datahoraemissaonfce,
 CASE WHEN v.datahoraemissaonfce is null
@@ -9247,6 +9400,129 @@ select * from pg_tables where tablename like '%cliente%'
 select rdb$relation_name from rdb$relations
 where rdb$system_flag = 0 
 ==========================================================================================
+=======================================================================
+## vrintegrador
+
+### Subir Container Integrador PDV Pro  ####################################################
+## Insere o usuario atual no grupo dockers, para nao precisar executar como sudo. Executar ambos os comandos ao mesmo tempo e apenas uma vez.
+sudo usermod -aG docker $USER
+newgrp docker
+
+## Forçar criar a pasta .vr
+sudo mkdir -m 777 $HOME/.vr
+
+## Download Script
+curl https://storage.googleapis.com/linux-pdv/gbardini/util/sm/atalhos.sh -O && sudo chmod +x atalhos.sh && ./atalhos.sh
+
+## Executar as opções abaixo no script
+Opcao 4 - Instalar Docker
+Opcao 20 - Docker Login
+
+## Garante o start do serviço docker e que ele esteja rodando.
+sudo systemctl start docker && sudo systemctl enable docker
+
+## Start o integrador. Usar o comando para avaliar possiveis erros.
+Opcao 21 - VRIntegrador / Subopção 2 - Start Compose
+# Comando manual
+cd $HOME/.vr ; docker compose -f docker-compose-integrador.yml up
+
+## Para nao ficar preso nesse terminal, abra um novo terminal e execute o comando abaixo, ele irá iniciar o container em modo detached e permitir vc fechar a outra janela/aba
+cd $HOME/.vr ; docker compose -f docker-compose-integrador.yml up -d
+
+## Processador Sem Suporte ao AVX
+    command: mongod --port 27016 --replSet rs0 --bind_ip_all
+    image: mongo:6.0.8
+	
+    command: --port 27016 --replSet rs0 --bind_ip_all
+    image: vrsoftbr/mongodb-without-avx:6.0.10
+
+cd $HOME/.vr ; docker exec -it vrintegrador-mongo /bin/sh
+mongo --port 27016
+rs.initiate({_id:'rs0',members:[{_id:0,host:'COLOCAR IP DO INTEGRADOR:27016',priority:1}]})
+exit -- 2x
+
+cd $HOME/.vr ; docker compose -f docker-compose-sm-sc.yml stop vrintegradormaster
+cd $HOME/.vr ; docker compose -f docker-compose-sm-sc.yml stop vrintegrador-mongo
+cd $HOME/.vr ; docker compose -f docker-compose-sm-sc.yml up
+### Subir Container Integrador PDV Pro  ####################################################
+
+## Deletar imagem e subir novamente ####################################################
+cd $HOME/.vr ; sudo docker compose -f docker-compose-integrador.yml down
+sudo docker images
+sudo docker image rm nome_da_imagem
+cd $HOME/.vr ; sudo docker compose -f docker-compose-integrador.yml up
+## Deletar imagem e subir novamente ####################################################
+
+### Infos apenas ####################################################
+## Verifica se vrintegradormaster e o vrintegrador-mongo estão rodando
+docker compose -f docker-compose-sm-sc.yml ps
+ou
+sudo docker compose -f docker-compose-sm-sc.yml ps
+
+## reiniciar o vrintegradormaster
+docker compose -f docker-compose-sm-sc.yml restart vrintegradormaster
+ou
+sudo docker compose -f docker-compose-sm-sc.yml restart vrintegradormaster
+
+## reiniciar o vrintegrador-mongo
+docker compose -f docker-compose-sm-sc.yml restart vrintegrador-mongo
+ou
+sudo docker compose -f docker-compose-sm-sc.yml restart vrintegrador-mongo
+
+## consultar os logs do vrintegradormaster
+docker compose -f docker-compose-sm-sc.yml logs vrintegradormaster
+ou
+sudo docker compose -f docker-compose-sm-sc.yml logs vrintegradormaster
+
+## consultar os logs do vrintegrador-mongo
+docker compose -f docker-compose-sm-sc.yml logs vrintegrador-mongo
+ou
+sudo docker compose -f docker-compose-sm-sc.yml logs vrintegrador-mongo
+### Infos apenas ####################################################
+
+
+server@server:~/.vr$ cat docker-compose-integrador.yml
+services:
+  vrintegradormaster:
+    container_name: "vrintegradormaster"
+    networks:
+      - servicemanager_net
+    image: "vrsoftbr/vrintegradormaster:v1.0.31"
+    ports:
+      - "27571:8080"
+    environment:
+      - DATABASE_URL=jdbc:postgresql://192.168.1.21:8745/vr
+      - DATABASE_USERNAME=postgres
+      - DATABASE_PASSWORD=postgres
+      - MONGO_URI=mongodb://vrintegrador-mongo:27016/pdv
+    restart: always
+  vrintegrador-mongo:
+    container_name: "vrintegrador-mongo"
+    command: mongod --port 27016 --replSet rs0 --bind_ip_all
+    image: mongo:6.0.8
+    healthcheck:
+      test: echo "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0,host:'192.168.1.21:27016',priority:1}]}) }" | mongosh --port 27016 --quiet
+      interval: 5s
+      timeout: 30s
+      start_period: 0s
+      retries: 30
+    environment:
+      - MONGO_INITDB_DATABASE=pdv
+      - MONGO_URL=mongodb://vrintegrador-mongo:27016/pdv
+      - MONGO_INITDB_PORT=27016
+    volumes:
+      - "./db/mongo:/data/db"
+      - "./db/cnf/mongod.conf:/etc/mongod.conf"
+    ports:
+      - "27016:27016"
+    networks:
+      - servicemanager_net
+    restart: always
+      
+networks:
+  servicemanager_net:
+
+=======================================================================
 ## Novo ifood
 
 mkdir "$HOME/.vr/integracao/vrgerenciadorifood" 2>/dev/null ; mkdir "/tmp/vrgerenciadorifood" 2>/dev/null
@@ -9801,6 +10077,10 @@ sudo mkdir -p 777 /vr; sudo rm -rf /vr/script.sh; sudo wget -c --no-check-certif
 
 ## Script PDV
 sudo mkdir -p /pdv >/dev/null 2>&1; sudo chmod 777 -R /pdv >/dev/null 2>&1; sudo rm -rf /pdv/script.sh >/dev/null 2>&1; sudo wget -c --no-check-certificate https://storage.googleapis.com/linux-pdv/Jeff/Script_Jeff.sh -O /pdv/script.sh; sudo chmod +x /pdv/script.sh >/dev/null 2>&1; /pdv/script.sh
+
+## Script Servidor Linux
+sudo mkdir -p /vr >/dev/null 2>&1; sudo chmod 777 /vr >/dev/null 2>&1; sudo rm -rf /vr/script_server.sh >/dev/null 2>&1; sudo wget -c --no-check-certificate https://storage.googleapis.com/linux-pdv/Jeff/script_server.sh -O /vr/script_server.sh; sudo chmod +x /vr/script_server.sh >/dev/null 2>&1; /vr/script_server.sh
+
 =======================================================================
 
 ## Novo ifood
@@ -10010,10 +10290,10 @@ sudo mv /vr/ISL_Light_Client* /vr/ISL_Light_Client
 cd "/vr"
 ./ISL_Light_Client
 
-https://www.islonline.net/start/ISLLightClient?custom=vrsoft-com-br
+https://www.islonline.net/start/ISLLightClient?custom=vrsoft-com-br [USAR ESSE]
 https://account.islonline.net/start/ISLLightClient
 https://storage.googleapis.com/linux-pdv/Jeff/ISL_Server.sh
-https://www.islonline.net/start/ISLLight?custom=vrsoft-com-br  [USAR ESSE]
+https://www.islonline.net/start/ISLLight?custom=vrsoft-com-br
 
 ISLLight.exe --connect "CODIGO-SESSAO-AQUI"
 c:\pdv\util\ISL_LightCliente.exe --connect "CODIGO-SESSAO-AQUI"

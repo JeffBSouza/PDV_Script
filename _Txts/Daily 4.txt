@@ -69136,9 +69136,54 @@ Opcao 20 - Docker Login
 ## Garante o start do serviço docker e que ele esteja rodando.
 sudo systemctl start docker && sudo systemctl enable docker
 
-## Start o integrador
+## Start o integrador. Usar o comando para avaliar possiveis erros.
 Opcao 21 - VRIntegrador / Subopção 2 - Start Compose
-docker compose -f docker-compose-integrador.yml up -d
+cd $HOME/.vr ; docker compose -f docker-compose-integrador.yml up
+
+# Para nao ficar preso nesse terminal, abra um novo terminal e execute o comando abaixo, ele irá iniciar o container em modo detached e permitir vc fechar a outra janela/aba
+cd $HOME/.vr ; docker compose -f docker-compose-integrador.yml up -d
+
+## Processador Sem Suporte ao AVX
+    command: mongod --port 27016 --replSet rs0 --bind_ip_all
+    image: mongo:6.0.8
+	
+    command: --port 27016 --replSet rs0 --bind_ip_all
+    image: vrsoftbr/mongodb-without-avx:6.0.10
+
+cd $HOME/.vr ; docker exec -it vrintegrador-mongo /bin/sh
+mongo --port 27016
+rs.initiate({_id:'rs0',members:[{_id:0,host:'COLOCAR IP DO INTEGRADOR:27016',priority:1}]})
+exit -- 2x
+
+cd $HOME/.vr ; docker compose -f docker-compose-sm-sc.yml stop vrintegradormaster
+cd $HOME/.vr ; docker compose -f docker-compose-sm-sc.yml stop vrintegrador-mongo
+cd $HOME/.vr ; docker compose -f docker-compose-sm-sc.yml up
+
+## Verifica se vrintegradormaster e o vrintegrador-mongo estão rodando
+docker compose -f docker-compose-sm-sc.yml ps
+ou
+sudo docker compose -f docker-compose-sm-sc.yml ps
+
+## reiniciar o vrintegradormaster
+docker compose -f docker-compose-sm-sc.yml restart vrintegradormaster
+ou
+sudo docker compose -f docker-compose-sm-sc.yml restart vrintegradormaster
+
+## reiniciar o vrintegrador-mongo
+docker compose -f docker-compose-sm-sc.yml restart vrintegrador-mongo
+ou
+sudo docker compose -f docker-compose-sm-sc.yml restart vrintegrador-mongo
+
+## consultar os logs do vrintegradormaster
+docker compose -f docker-compose-sm-sc.yml logs vrintegradormaster
+ou
+sudo docker compose -f docker-compose-sm-sc.yml logs vrintegradormaster
+
+## consultar os logs do vrintegrador-mongo
+docker compose -f docker-compose-sm-sc.yml logs vrintegrador-mongo
+ou
+sudo docker compose -f docker-compose-sm-sc.yml logs vrintegrador-mongo
+
 
 
 server@server:~/.vr$ cat docker-compose-integrador.yml
@@ -69147,13 +69192,13 @@ services:
     container_name: "vrintegradormaster"
     networks:
       - servicemanager_net
-    image: "vrsoftbr/vrintegradormaster:v1.0.31"
+    image: "vrsoftbr/vrintegradormaster:v1.0.34"
     ports:
       - "27571:8080"
     environment:
-      - DATABASE_URL=jdbc:postgresql://192.168.1.21:8745/vr
+      - DATABASE_URL=jdbc:postgresql://ALTERAR-IP-AQUI:ALTERAR-PORTA-AQUI/vr
       - DATABASE_USERNAME=postgres
-      - DATABASE_PASSWORD=postgres
+      - DATABASE_PASSWORD=ALTERAR-SENHA-BANCO-AQUI
       - MONGO_URI=mongodb://vrintegrador-mongo:27016/pdv
     restart: always
   vrintegrador-mongo:
@@ -69161,7 +69206,7 @@ services:
     command: mongod --port 27016 --replSet rs0 --bind_ip_all
     image: mongo:6.0.8
     healthcheck:
-      test: echo "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0,host:'192.168.1.21:27016',priority:1}]}) }" | mongosh --port 27016 --quiet
+      test: echo "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0,host:'ALTERAR-IP-AQUI:27016',priority:1}]}) }" | mongosh --port 27016 --quiet
       interval: 5s
       timeout: 30s
       start_period: 0s
@@ -69338,6 +69383,398 @@ WHERE vi.id_venda = vnfce.id_venda AND vi.id_venda = v.id
 
 =======================================================================
 
+11.468.190/0001-92 - SUPERMERCADO COMPREMAIS
+
+
+Erro "erro ao enviar prorrogação de ofertas para o connet"
+Ticket: 2466810
+=======================================================================
+
+Autorizador travando conexão ao realizar UPDATE NFCESEQUENCIA
+Ticket: 2467123
+
+
+=======================================================================
+
+null
+
+vrframework.classe.VRStatement.open(VRStatement.java:120)
+vrframework.classe.VRStatement.createStatement(VRStatement.java:36)
+vrautorizador.dao.parametro.PdvParametroDAO.carregarParcelasCreditoRotativo(PdvParametroDAO.java:50)
+vrautorizador.service.parametro.PdvParametroService.carregarParcelasCreditoRotativo(PdvParametroService.java:69)
+vrautorizador.controller.parametro.PdvParametroController.carregarParcelasCreditoRotativo(PdvParametroController.java:46)
+vrautorizador.service.creditorotativo.CarregarNumeroParcelasService.getParcela(CarregarNumeroParcelasService.java:38)
+vrautorizador.service.creditorotativo.CarregarNumeroParcelasService.execute(CarregarNumeroParcelasService.java:65)
+vrautorizador.gui.AutorizadorGUI.carregarNumeroParcelas(AutorizadorGUI.java:4265)
+vrautorizador.classe.MessageReceiver.run(MessageReceiver.java:269)
+java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+java.lang.Thread.run(Thread.java:750)
+
+
+=======================================================================
+
+Falha Autorizador 4.3.3-22 "Carregar Numero Parcelas Venda" - Credito Rotativo Parcelado
+Ticket: 2467227
+
+=======================================================================
+
+VR Autorizador  - Consulta Cliente Mercafacil | Retorno: Erro ao carregar parâmetro pdv!
+Ticket: 2448483
+
+
+=======================================================================
+1	LOJA 01	TRUE	TRUE	2	10.932.563/0001-71	MERCADO ESTRELA	CEREAIS E MERCEARIA ESTRELA DO IPE LTDA	BELFORD ROXO	RJ	33
+
+
+MERCADO ESTRELA - Lj1 - 10.932.563/0001-71
+
+=======================================================================
+
+
+
+('41250710584432000140651010001654541101738371','41250710584432000140651010001643181101726415','41250710584432000140651020001201911102273913','41250810584432000140651010011692641101777929')
+
+=======================================================================
+305409,291111,296304,290782
+
+
+
+
+=======================================================================
+#voltaraqui
+
+## Primeira chave diferente da vendanfce e chavenfce da venda <> chavenfce da vendanfce
+SELECT vnfce.id as "nfce_id",v.id as "venda_id",v.numerocupom,v.ecf,v.data,v.chavenfce AS "Chave_Venda",vnfce.chavenfce AS "Chave_NFCe",
+CASE WHEN v.chavenfce <> '' THEN TO_NUMBER(nullif(SUBSTRING(v.chavenfce, 26, 9), '')::VARCHAR, '999999999') END AS "Venda_Numero_NFCe",
+CASE WHEN v.chavenfce <> ''AND TO_NUMBER(nullif(SUBSTRING(v.chavenfce, 35, 1), '')::VARCHAR, '999999999') = 1 THEN 'Normal'
+	WHEN v.chavenfce <> '' AND TO_NUMBER(nullif(SUBSTRING(v.chavenfce, 35, 1), '')::VARCHAR, '999999999') = 9 THEN 'Contingencia'
+	ELSE NULL END AS "Emissao_Venda",
+CASE WHEN vnfce.chavenfce <> '' THEN TO_NUMBER(nullif(SUBSTRING(vnfce.chavenfce, 26, 9), '')::VARCHAR, '999999999') END AS "Repo_Numero_NFCe",
+CASE WHEN vnfce.chavenfce <> '' AND TO_NUMBER(nullif(SUBSTRING(vnfce.chavenfce, 35, 1), '')::VARCHAR, '999999999') = 1 THEN 'Normal'
+	WHEN vnfce.chavenfce <> '' AND TO_NUMBER(nullif(SUBSTRING(vnfce.chavenfce, 35, 1), '')::VARCHAR, '999999999') = 9 THEN 'Contingencia'
+	ELSE NULL END AS "Emissao_NFCe",
+       substring((xpath('//nfe:infNFe/@Id', xmlparse(document vnfce.xml),
+                        ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']]))[1]::text from 4) AS Primeira_ChaveXML_NFCe,
+       substring((xpath('//nfe:infNFe/@Id', xmlparse(document v.xml),
+                        ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']]))[1]::text from 4) AS Primeira_ChaveXML_Venda,
+       CASE 
+           WHEN substring((xpath('//nfe:infNFe/@Id', xmlparse(document vnfce.xml),
+                                 ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']]))[1]::text from 4)
+                <> vnfce.chavenfce
+           THEN 'DIFERENTE' ELSE 'IGUAL' END AS status,
+    -- 🔹 UPDATE executável para pdv.vendanfce
+CASE WHEN substring((
+            xpath('//nfe:infNFe/@Id', xmlparse(document vnfce.xml),
+                  ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']])
+        )[1]::text FROM 4) <> vnfce.chavenfce AND v.chavenfce = vnfce.chavenfce
+    THEN format(
+        'UPDATE pdv.vendanfce SET xml = regexp_replace(xml, %L, %L) WHERE id=%s;',
+        'Id="NFe' || substring((
+            xpath('//nfe:infNFe/@Id', xmlparse(document vnfce.xml),
+                  ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']])
+        )[1]::text FROM 4) || '"',
+        'Id="NFe' || vnfce.chavenfce || '"',
+        vnfce.id
+    )
+    ELSE NULL END AS sql_update_vendanfce_executavel,
+    -- 🔹 UPDATE executável para pdv.venda
+CASE WHEN substring((
+            xpath('//nfe:infNFe/@Id', xmlparse(document v.xml),
+                  ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']])
+        )[1]::text FROM 4) <> vnfce.chavenfce AND v.chavenfce = vnfce.chavenfce
+    THEN format(
+        'UPDATE pdv.venda SET xml = regexp_replace(xml, %L, %L) WHERE id=%s;',
+        'Id="NFe' || substring((
+            xpath('//nfe:infNFe/@Id', xmlparse(document v.xml),
+                  ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']])
+        )[1]::text FROM 4) || '"',
+        'Id="NFe' || v.chavenfce || '"',
+        v.id
+    )
+    ELSE NULL END AS sql_update_venda_executavel,
+CASE WHEN v.chavenfce <> vnfce.chavenfce THEN 
+        'UPDATE pdv.vendanfce SET chavenfce = ''' || v.chavenfce || ''' WHERE id = ' || vnfce.id || ';'
+END AS sql_update
+FROM pdv.vendanfce AS vnfce
+INNER JOIN pdv.venda AS v ON vnfce.id_venda=v.id
+WHERE  1=1
+AND v.id in (314382,314440,303946,305957,305744,305606,305603,305883,304409);
+
+
+
+## Identifica XMLs com primeira chavenfce diferente da chave na autorização
+SELECT vnfce.id,v.numerocupom,v.ecf,v.data,
+       substring((xpath('//nfe:infNFe/@Id', xmlparse(document vnfce.xml),
+                        ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']]))[1]::text from 4) AS infnfe_id,
+       (xpath('//nfe:protNFe/nfe:infProt/nfe:chNFe/text()', xmlparse(document vnfce.xml),
+              ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']]))[1]::text AS chnfe,
+       CASE 
+           WHEN substring((xpath('//nfe:infNFe/@Id', xmlparse(document vnfce.xml),
+                                 ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']]))[1]::text from 4)
+                <> (xpath('//nfe:protNFe/nfe:infProt/nfe:chNFe/text()', xmlparse(document vnfce.xml),
+                          ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']]))[1]::text
+           THEN 'DIFERENTE'
+           ELSE 'IGUAL'
+       END AS status
+FROM pdv.vendanfce AS vnfce
+INNER JOIN pdv.venda AS v ON vnfce.id_venda=v.id
+WHERE  1=1
+AND substring((xpath('//nfe:infNFe/@Id', xmlparse(document vnfce.xml),
+                        ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']]))[1]::text from 4)
+      <> (xpath('//nfe:protNFe/nfe:infProt/nfe:chNFe/text()', xmlparse(document vnfce.xml),
+                ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']]))[1]::text
+AND v.data >='2025-07-01'
+--AND v.id = 296207;
+
+## Compara chavenfce do começo do xml com a chavenfce da autorizacao e tbm informa caso nao tenha autorizacao
+SELECT vnfce.id as "nfce_id",v.id as "venda_id",v.numerocupom,v.ecf,v.data,v.chavenfce AS "Chave_Venda",vnfce.chavenfce AS "Chave_NFCe",
+CASE WHEN v.chavenfce <> '' THEN TO_NUMBER(nullif(SUBSTRING(v.chavenfce, 26, 9), '')::VARCHAR, '999999999') END AS "Venda_Numero_NFCe",
+CASE WHEN v.chavenfce <> ''AND TO_NUMBER(nullif(SUBSTRING(v.chavenfce, 35, 1), '')::VARCHAR, '999999999') = 1 THEN 'Normal'
+	WHEN v.chavenfce <> '' AND TO_NUMBER(nullif(SUBSTRING(v.chavenfce, 35, 1), '')::VARCHAR, '999999999') = 9 THEN 'Contingencia'
+	ELSE NULL END AS "Emissao_Venda",
+CASE WHEN vnfce.chavenfce <> '' THEN TO_NUMBER(nullif(SUBSTRING(vnfce.chavenfce, 26, 9), '')::VARCHAR, '999999999') END AS "Repo_Numero_NFCe",
+CASE WHEN vnfce.chavenfce <> '' AND TO_NUMBER(nullif(SUBSTRING(vnfce.chavenfce, 35, 1), '')::VARCHAR, '999999999') = 1 THEN 'Normal'
+	WHEN vnfce.chavenfce <> '' AND TO_NUMBER(nullif(SUBSTRING(vnfce.chavenfce, 35, 1), '')::VARCHAR, '999999999') = 9 THEN 'Contingencia'
+	ELSE NULL END AS "Emissao_NFCe",
+    CASE 
+        WHEN vnfce.xml IS NULL OR vnfce.xml NOT LIKE '<%' THEN 'XML INVÁLIDO'
+        WHEN NOT xml_is_well_formed_document(vnfce.xml) THEN 'XML INVÁLIDO'
+        ELSE substring((
+            xpath('//nfe:infNFe/@Id', xmlparse(document vnfce.xml),
+                  ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']])
+        )[1]::text FROM 4)
+    END AS infnfe_id,
+    CASE 
+        WHEN vnfce.xml IS NULL OR vnfce.xml NOT LIKE '<%' THEN NULL
+        WHEN NOT xml_is_well_formed_document(vnfce.xml) THEN NULL
+        ELSE (xpath('//nfe:protNFe/nfe:infProt/nfe:chNFe/text()', 
+                    xmlparse(document vnfce.xml),
+                    ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']])
+              )[1]::text
+    END AS chnfe,
+    CASE 
+        WHEN vnfce.xml IS NULL OR vnfce.xml NOT LIKE '<%' THEN 'XML INVÁLIDO'
+        WHEN NOT xml_is_well_formed_document(vnfce.xml) THEN 'XML INVÁLIDO'
+        WHEN (xpath('//nfe:protNFe/nfe:infProt/nfe:chNFe/text()', 
+                    xmlparse(document vnfce.xml),
+                    ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']])
+              )[1] IS NULL THEN 'CHAVE NÃO EXISTE'
+        WHEN substring((
+                xpath('//nfe:infNFe/@Id', xmlparse(document vnfce.xml),
+                      ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']])
+            )[1]::text FROM 4)
+             <> (
+                xpath('//nfe:protNFe/nfe:infProt/nfe:chNFe/text()', 
+                      xmlparse(document vnfce.xml),
+                      ARRAY[ARRAY['nfe','http://www.portalfiscal.inf.br/nfe']])
+            )[1]::text
+             THEN 'DIFERENTE'
+        ELSE 'IGUAL'
+    END AS status
+FROM pdv.vendanfce AS vnfce
+INNER JOIN pdv.venda AS v ON vnfce.id_venda = v.id
+WHERE v.data >= '2025-09-01' AND v.cancelado = FALSE;
+
+=======================================================================
+
+
+301365	305409	164318	101	2025-07-06	41250710584432000140651010001643181101726415	41250710584432000140651010001643181101726415	164318	Normal	164318	Normal	41250710584432000140651010001643189101643183	41250710584432000140651010001643189101643183	DIFERENTE	
+UPDATE pdv.vendanfce SET xml = regexp_replace(xml, 'Id="NFe41250710584432000140651010001643189101643183"', 'Id="NFe41250710584432000140651010001643181101726415"') WHERE id=301365;
+UPDATE pdv.venda SET xml = regexp_replace(xml, 'Id="NFe41250710584432000140651010001643189101643183"', 'Id="NFe41250710584432000140651010001643181101726415"') WHERE id=305409;
+
+UPDATE pdv.vendanfce SET transmitido=FALSE, contingencia=TRUE, id_situacaonfce=0 WHERE id IN
+(305409,291111,296304,290782);
+=======================================================================
+
+
+301832	305883	184910	101	2025-09-13	41250910584432000140651010011760451101849102	41250910584432000140651010011760459101849108	1176045	Normal	1176045	Contingencia	41250910584432000140651010011760459101849108		CHAVE NÃO EXISTE
+
+
+=======================================================================
+
+
+https://sped.fazenda.pr.gov.br/NFCe/webservices/sped/nfce/completa
+
+http://www.sped.fazenda.pr.gov.br/modules/conteudo/nfce.php?consulta=completa
+=======================================================================
+
+UPDATE pdv.vendanfce SET transmitido=FALSE, contingencia=TRUE, id_situacaonfce=0 WHERE id_venda in
+(314382,314440,303946,305957,305744,305606,305603,305883,304409)
+
+
+
+=======================================================================
+[ 6145.961545] usb 2-1.3: new full-speed USB device number 9 using ehci-pci
+[ 6146.074658] usb 2-1.3: New USB device found, idVendor=1a86, idProduct=7523, bcdDevice= 2.54
+[ 6146.074670] usb 2-1.3: New USB device strings: Mfr=0, Product=2, SerialNumber=0
+[ 6146.074674] usb 2-1.3: Product: USB2.0-Ser!
+[ 6146.076373] usb 2-1.3: ch341-uart converter now attached to ttyUSB0
+
+
+
+
+
+=======================================================================
+Falha transmissão de NFCe pelo VRGerenciadorNFCe - Rejeicao: Nao informado valor do ICMS desonerado
+2465732
+
+7892840823030
+
+=======================================================================
+
+
+nfce.idtoken=000003
+nfce.csc=e9e0ae2e2b461e12
+nfce.certificado.senha=1234
+
+3e4e181a2a11be9a4568d8031ef65e7a10d8a924a6f20ab4daa2da42547e77ca
+=======================================================================
+
+
+/usr/lib/jvm/java-11-openjdk-amd64/bin/java
+/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
+/usr/lib/jvm/java-8-openjdk-i386/jre/bin/java
+
+
+
+=======================================================================
+
+
+1	Lj01-Apollo	TRUE	TRUE	217	28.845.012/0001-36	APOLLO HOME CENTER	APOLLO HOME CENTER LTDA	BOM JESUS DA LAPA	BA	29
+
+APOLLO HOME CENTER - Loja 1 - 28.845.012/0001-36
+=======================================================================
+
+Codigo original: 0050110251437320001212230000011833 
+Codigo limpo: 0050110251437320001212230000011833 
+ 
+=== INFORMACOES FORMATADAS === 
+ID-LOJA....: 005 
+DATA.......: 01/10/2025 
+HORA.......: 14:37:32 
+OPERADOR...: 000121 
+ECF........: 223 
+CUPOM......: 0000011833 
+ 
+=== FORMATO PADRAO === 
+005|011025|143732|000121|223|0000011833 
+
+Codigo original: 0050110251437320000242230000011833 
+Codigo limpo: 0050110251437320000242230000011833 
+ 
+=== INFORMACOES FORMATADAS === 
+ID-LOJA....: 005 
+DATA.......: 01/10/2025 
+HORA.......: 14:37:32 
+OPERADOR...: 000024 
+ECF........: 223 
+CUPOM......: 0000011833 
+ 
+=== FORMATO PADRAO === 
+005|011025|143732|000024|223|0000011833 
+
+=== COMANDO SQL === 
+SELECT * FROM pdv.venda WHERE ecf = 223 AND DATA= '2025-10-01' AND id_loja = 005 AND numerocupom = 0000011833 
+=======================================================================
+
+
+532246	2025-10-04	164004	1	12946	1.000	2.000	31838	UPDATE pdv.vendapromocao SET quantidade = 1.000 WHERE id_venda = 532246 AND id_produto = 12946 AND id = 31838;
+
+
+=======================================================================
+
+
+I - ISENTO
+N - OUTRAS
+F - SUBSTITUIDO
+T - Se nao for nenhuma das anteriores
+T + (Numero) = Numero = porcentagem da aliquota
+
+nome da situação tributária + a porcentagem caso tenha
+=======================================================================
+Cupom – Rota de Cupons: 0050110251437320001212230000011833
+Cupom – Rota de Cancelamento: 0050110251437320000242230000011833
+
+Codigo original: 0050110251437320001212230000011833 
+Codigo limpo: 0050110251437320001212230000011833 
+ 
+=== INFORMACOES FORMATADAS === 
+ID-LOJA....: 005 
+DATA.......: 01/10/2025 
+HORA.......: 14:37:32 
+OPERADOR...: 000121 
+ECF........: 223 
+CUPOM......: 0000011833 
+ 
+=== FORMATO PADRAO === 
+005|011025|143732|000121|223|0000011833 
+
+
+Codigo original: 0050110251437320000242230000011833 
+Codigo limpo: 0050110251437320000242230000011833 
+ 
+=== INFORMACOES FORMATADAS === 
+ID-LOJA....: 005 
+DATA.......: 01/10/2025 
+HORA.......: 14:37:32 
+OPERADOR...: 000024 
+ECF........: 223 
+CUPOM......: 0000011833 
+ 
+=== FORMATO PADRAO === 
+005|011025|143732|000024|223|0000011833 
+
+select * from pdv.operador where id in (121,24)
+ID Operador 24 = Loja id 1, matricula 1000012 - Thallya Lopes
+ID Operador 121 = Loja id 5, matricula 1000012 - Edmeire Pucino Alves
+
+=======================================================================
+
+GerenciadorMercafacil CRM - Enviado de ID operador incorreto no COUPON de cancelamento
+Ticket: 2475003
+
+
+=======================================================================
+
+
+0000004000020
+
+100001
+=======================================================================
+
+## Deletar imagem e subir novamente
+cd $HOME/.vr ; sudo docker compose -f docker-compose-integrador.yml down
+sudo docker images
+sudo docker image rm nome_da_imagem
+cd $HOME/.vr ; sudo docker compose -f docker-compose-integrador.yml up
+
+
+cd $HOME/.vr ; docker compose -f docker-compose-sm-sc.yml down vrintegradormaster
+cd $HOME/.vr ; docker compose -f docker-compose-sm-sc.yml down vrintegrador-mongo
+cd $HOME/.vr ; docker compose -f docker-compose-sm-sc.yml up
+
+=======================================================================
+
+
+SELECT
+STRING_AGG(CAST(v.numerocupom AS VARCHAR), ', ') AS cupons,
+count(id)
+FROM pdv.venda AS v
+WHERE v.DATA='2025-11-01' AND ecf=106 and v.id_loja=7
+
+select
+*
+from pdv.venda where DATA='2025-11-01' AND ecf=106 and id_loja=7
+and id not in (select id_venda from pdv.vendaitem)
+
+
+=======================================================================
+select * from pdv.vendaoperadorauditoria where datahoraentrada='2025-10-30 09:27:33'
+select * from pdv.vendaoperador where datahoraentrada='2025-10-30 09:27:33'
+
+select * from pdv.vendaoperadorauditoria where datahoraentrada='2025-10-30 09:27:33'
+update pdv.vendaoperadorauditoria set datahoraentrada='2025-10-30 09:28:33' where id=172
 
 
 
@@ -69346,65 +69783,57 @@ WHERE vi.id_venda = vnfce.id_venda AND vi.id_venda = v.id
 
 
 
+  Detail: Key (matricula, datahoraentrada, id_loja, ecf)=(100001, 2025-10-30 07:01:30, 1, 101) already exists.] [/* insert for br.com.vrsoftware.vrintegradormaster.domain.api.model.VendaOperadorAuditoria */insert into pdv.vendaoperadorauditoria (data,datahoraentrada,datahorasaida,diferenca,digitado,ecf,gtfinal,gtinicial,id_loja,id_situacaovendaoperador,matricula,observacao,pagamento,qtdcupomcancelado,qtdcupomvenda,qtditemcancelado,qtditemvenda,recebimento,tempopausa,totalcancelamento,totaldesconto) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)]; SQL [/* insert for br.com.vrsoftware.vrintegradormaster.domain.api.model.VendaOperadorAuditoria */insert into pdv.vendaoperadorauditoria (data,datahoraentrada,datahorasaida,diferenca,digitado,ecf,gtfinal,gtinicial,id_loja,id_situacaovendaoperador,matricula,observacao,pagamento,qtdcupomcancelado,qtdcupomvenda,qtditemcancelado,qtditemvenda,recebimento,tempopausa,totalcancelamento,totaldesconto) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)]; constraint [un_vendaoperadorauditoria]
 
+
+=======================================================================
+7	LOJA 06	TRUE		1146	21.676.733/0006-25	SUPERLAR 6	WRS SUPERMERCADOS EIRELI LJ 06	SAO PAULO	SP	35
+
+
+SUPERLAR Loja 06 - 21.676.733/0006-25
 
 =======================================================================
 
 
 
 
-
+1	LOJA 01	TRUE	TRUE	4246	44.909.208/0001-01	SUPERMERCADO PIZZOL LTDA - EPP	SUPERMERCADO PIZZOL LTDA - EPP	TIETE	SP	35
 =======================================================================
 
 
 
-
-
-=======================================================================
-
-
-
-
+SUPERMERCADO PIZZOL - 44.909.208/0001-01
 
 =======================================================================
 
 
-
-
-
-=======================================================================
-
-
-
-
+Cadastro de Produto: Erro ao realizar conexão, verifique a configuração!
+Ticket: 2476441
 
 =======================================================================
+2|000200|005803
+Codigo item: 000200 - 2 | 6
+Preço: 00580 - 8 | 5
 
+2000200005803
 
-
-
-
+2000200005803
+2000200005803
 =======================================================================
 
-
-
+Estorno pagamento shipay devido 1 centavo de diferença - 4.3.8-114
+Ticket: 2477028
 
 
 =======================================================================
 
 
-
-
-
-=======================================================================
-
-
-
+Supermercado Renata - 06.206.033/0001-79
 
 
 =======================================================================
-
-
+Concentrador tentando subir Fechamento PDV que ja esta no VRMaster
+Tickeet: 2477565
 
 
 
@@ -69412,234 +69841,230 @@ WHERE vi.id_venda = vnfce.id_venda AND vi.id_venda = v.id
 
 
 
+1	LOJA 01	TRUE	TRUE	4246	44.909.208/0001-01	SUPERMERCADO PIZZOL LTDA - EPP	SUPERMERCADO PIZZOL LTDA - EPP	TIETE	SP	35
+SUPERMERCADO PIZZOL - 44.909.208/0001-01 - PDV 103
+=======================================================================
+
+
+2	RESENDE 2	TRUE		1042	03.030.688/0002-21	O CORINGAO LTDA FILIAL	O CORINGAO LTDA FILIAL	ULIANOPOLIS	PA	15
+CORINGAO - RESENDE 2 - 03.030.688/0002-21
+
+=======================================================================
+
+https://cults3d.com/pt/modelo-3d/arte/star-wars-chibi-kylo-ren-sith-with-light-saber-printing-diorama
+
+https://cults3d.com/pt/modelo-3d/arte/pokemon-pikachu-thor-3d-printing-model
+
+https://cults3d.com/pt/modelo-3d/arte/darth-vader-pikachu-3d-printing-diorama
+
+https://cults3d.com/pt/modelo-3d/arte/t-800-single-and-3-piece-high-detail-head
+
+https://cults3d.com/pt/modelo-3d/ferramentas/terminator-rex-krisnaas14
+
+https://cults3d.com/pt/modelo-3d/jogo/star-wars-stormtrooper-1-12-articulated-action-figure
+
+https://cults3d.com/pt/usuarios/Adel85/modelos-3d
+
+https://cults3d.com/pt/modelo-3d/arte/kpop-demon-hunters-chibi-huntrix
+
+https://cults3d.com/pt/modelo-3d/jogo/harry-potter
+
+https://cults3d.com/pt/modelo-3d/gadget/mobile-exo-suit
+
+https://cults3d.com/pt/modelo-3d/moda/cat-ears-headphone-accessory
+
+https://cults3d.com/pt/modelo-3d/gadget/star-wars-darth-vader-keychain
+
+https://cults3d.com/pt/modelo-3d/gadget/star-wars-mandalorian-keychain
+
+https://cults3d.com/pt/modelo-3d/moda/ar-15-m4-ergo-tactical-pistol-grip-bic-cover
+
+https://cults3d.com/pt/modelo-3d/moda/bic-lighter-cover-rick-and-morty
+
+https://cults3d.com/pt/modelo-3d/gadget/bic-lighter-holder-skull-rose
+
+https://cults3d.com/pt/modelo-3d/gadget/lighter-case-hand-grenade-shaped
+
+https://cults3d.com/pt/modelo-3d/jogo/uss-entersurprise-print-in-place-playset-container-for-tiny-f14-jet-fighters
+
+https://cults3d.com/pt/usuarios/agepbiz/modelos-3d
+
+https://cults3d.com/pt/modelo-3d/arte/clipper-death
+
+https://cults3d.com/pt/designs-colecoes/SolidZone/counter-strike
+
+https://cults3d.com/pt/modelo-3d/gadget/bic-lighter-holder-harry-potter
+
+https://cults3d.com/pt/modelo-3d/ferramentas/bic-lighter-case-harley-davidson
+
+https://cults3d.com/pt/modelo-3d/ferramentas/push-blocks-push-handle-for-use-with-small-objects-on-a-circular-saw-or-router-machine
+
+https://cults3d.com/pt/modelo-3d/moda/bic-lighter-case-spidy
+
+https://cults3d.com/pt/modelo-3d/moda/bic-lighter-case-monster
+
+https://cults3d.com/pt/modelo-3d/gadget/dragon-skull-lighter-bust-vase
+
+https://cults3d.com/pt/modelo-3d/arte/lighter-case-for-bic-mini
+
+https://cults3d.com/pt/modelo-3d/arte/lighter-case-for-bic-mini-heves-3
+
+https://cults3d.com/pt/modelo-3d/arte/lighter-case-for-bic-mini-heves-cbc9
+
+https://cults3d.com/pt/modelo-3d/arte/lighter-case-for-bic-mini-heves-e731
+
+https://cults3d.com/pt/modelo-3d/arte/lighter-case-for-bic-mini-heves-4cb3
+
+https://cults3d.com/pt/modelo-3d/arte/lighter-case-for-bic-mini-heves-ab6e
+
+https://cults3d.com/pt/modelo-3d/arte/lighter-case-for-bic-heves-791e
+
+https://cults3d.com/pt/modelo-3d/arte/lighter-case-for-bic-mini-heves-ce75
+
+https://cults3d.com/pt/modelo-3d/arte/gundam-williamsindustries
+
+https://cults3d.com/pt/modelo-3d/gadget/dragon-scale-lighter-case
+
+https://cults3d.com/pt/modelo-3d/jogo/necronomicon-lighter-case-for-generic-lighters
+
+https://cults3d.com/pt/modelo-3d/gadget/funda-encendedor-bic-granada
+
+https://cults3d.com/pt/modelo-3d/arte/dark-lighter-case
+
+https://cults3d.com/pt/modelo-3d/diversos/bic-lighter-case-metallica
+
+https://cults3d.com/pt/modelo-3d/diversos/funda-mechero-clipper-asia-impresion-sin-soportes-grinderking
+
+https://cults3d.com/pt/modelo-3d/moda/mn-cutout-lighter-case
+
+https://cults3d.com/pt/modelo-3d/diversos/human-skull-lighter-case-cover
+
+https://cults3d.com/pt/modelo-3d/diversos/funda-mechero-clipper-alien-skull-fdm-sla-impresion-facil-grinderking
+
+https://cults3d.com/pt/modelo-3d/diversos/funda-mechero-clipper-metallica-x-2-impresion-facil-grinderking
+=======================================================================
+
+
+05148934271
 
 
 =======================================================================
 
 
 
-
-
-=======================================================================
-
-
-
-
+MATRIZ - SUPERMERCADO O CORINGAO - 3030688000140	MATRIZ	TRUE	TRUE	545	03.030.688/0001-40	SUPERMERCADO O CORINGAO	O CORINGAO LTDA	ULIANOPOLIS	PA	15
 
 =======================================================================
 
 
 
+PRIX SUPERMERCADOS - L01 - MATRIZ - 53.873.057/0001-61
+
+=======================================================================
+
+Falha na aplicação de desconto sacolinha e  falha da validação do parâmetro DESCONTO SACOLINHA - 4.3.8-114
+Ticket: 2479363
 
 
 =======================================================================
 
 
+1	LOJA 01	TRUE	TRUE	1	06.881.313/0001-82	SUPERMERCADO PROGRESSO LTDA	SUPERMERCADO PROGRESSO LTDA	MARACANAU	CE	23
+SUPERMERCADO PROGRESSO - 06.881.313/0001-82
+
+=======================================================================
+
+select chavenfce,datahoraemissaonfce,data,horainicio,horatermino from pdv.venda where
+numerocupom=138146 and ecf=107 and data='2025-10-31'
 
 
 
 =======================================================================
 
+## “Erro na Chave de Acesso – Campo ID não corresponde à concatenação dos campos”
+# Venda do dia x transmitida no dia y
 
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
+SELECT
+v.DATA, v.datahoraemissaonfce,
+CASE WHEN (v.DATA <> CAST(v.datahoraemissaonfce AS date)) 
+AND (SUBSTRING(v.chavenfce, 3, 4) <> TO_CHAR(CAST(v.datahoraemissaonfce AS date), 'YYMM'))
+THEN 'UPDATE pdv.venda SET datahoraemissaonfce = ''' || 
+      TO_CHAR(v.data, 'YYYY-MM-DD') || ' ' || 
+      TO_CHAR(v.horatermino - INTERVAL '1 second', 'HH24:MI:SS') || 
+      ''' WHERE id=' || v.id || ';' 
+ELSE NULL END AS Sql_venda,
+v.DATA, vnfce.datahoraemissaonfce,
+CASE WHEN v.DATA <> CAST(vnfce.datahoraemissaonfce AS date) 
+AND (SUBSTRING(vnfce.chavenfce, 3, 4) <> TO_CHAR(CAST(vnfce.datahoraemissaonfce AS date), 'YYMM'))
+THEN 'UPDATE pdv.vendanfce SET datahoraemissaonfce = ''' || 
+      TO_CHAR(v.data, 'YYYY-MM-DD') || ' ' || 
+      TO_CHAR(v.horatermino - INTERVAL '1 second', 'HH24:MI:SS') || 
+      ''' WHERE id_venda=' || v.id || ';' 
+ELSE NULL END AS Sql_vendanfce,
+SUBSTRING(vnfce.chavenfce, 3, 4) as ANO_MES_ChaveNFCe,
+SUBSTRING(v.chavenfce, 3, 4) as ANO_MES_ChaveVenda
+FROM pdv.venda AS v
+LEFT JOIN pdv.vendanfce AS vnfce ON v.id=vnfce.id_venda
+WHERE 1=1
+AND vnfce.transmitido=FALSE AND vnfce.contingencia=TRUE AND (vnfce.id_situacaonfce=0 OR vnfce.id_situacaonfce=2)
+AND v.data >= '';
 
 
 =======================================================================
 
-
-
-
-
-=======================================================================
-
-
-
+Rejeição para transmissão de Vendas NFCe - “Erro na Chave de Acesso – Campo ID não corresponde à concatenação dos campos”
+Ticket: 2480600
 
 
 =======================================================================
 
+No. Terminal Razao Social CNPJ
+SUPERMERCADO RECANTO EIRELI ME 5959050000114
+JOSE LEDO DA COSTA e CIA LTDA  ME 5505630000131
+PAG LEV GUARIBA SUPERMERCADOS LTDA 10218492000140
+ANTONINHO ATACADO E VAREJO LTDA 00.894.231/0007-81 -------
+SUPERMERCADOS SAO JOAO LTDA 14960800000169
+R e M MADUREIRA LTDA EPP 29392031000117 -------
+SUPERMERCADO MARIANA IBATE LTDA 55626105000142
+SUPERMERCADO MULT VAREJAO LTDA  ME 8722993000117
+FLAVIA FARIAS DA SILVA 26259857000114 -------
+IRACEMA TAVARES GAUDENCIO  ME 3060516000110
 
+
+ANTONINHO ATACADO E VAREJO LTDA 00.894.231/0007-81
+R e M MADUREIRA LTDA EPP 29392031000117
+FLAVIA FARIAS DA SILVA 26259857000114
+=======================================================================
+
+select * from pdv.ecflayout order by id_ecf
+select * from pdv.ecflayout where id_ecf in (2,3,4,5,6) order by id
+
+select * from pdv.ecf
+
+delete from pdv.ecflayout where id in (7,12,8,13,14,9,29)
+
+select
+e.id, e.ecf,
+el.id as ecflayout_id
+from pdv.ecf as e
+inner join pdv.ecflayout as el on e.id=el.id_ecf
+order by e.ecf
+
+select * from pdv.ecflayout where id_ecf in (3,10)
+7,12,8,13,14,9,29
 
 
 
 =======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
+Itens não identificando EMBALAGEM diferente de UN ou KG
+Ticket: 2481856
 
 
 
 =======================================================================
 
 
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
+232967025231839
 
 
 =======================================================================

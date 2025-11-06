@@ -52,8 +52,8 @@ libdllsat_elgin="/usr/lib/libdllsat_elgin.so"
 propertiespdv="/vr/vr.properties"
 SHEBANG='#!/bin/bash'
 
-sitefVrs="7.0.117.109.r1"
-sitefVrsTeste="7.0.117.108.r1"
+sitefVrs="7.0.117.112.r3"
+sitefVrsTeste="7.0.117.109.r1"
 
 rustDeskvrs="1.4.2"
 
@@ -541,6 +541,12 @@ if ! dpkg --print-foreign-architectures | grep -qw i386; then
 fi
 }
 
+comandosPreparacao() {
+    sudo dpkg --configure -a
+    sudo apt-get --fix-broken install
+    sudo apt-get -f -y install
+}
+
 setshortcutfiles() {
     local desktopDirs=("$HOME/Desktop" "$HOME/Área de Trabalho" "$HOME/Área de trabalho")
     local dir
@@ -627,10 +633,7 @@ check_and_handle_files() {
 
     # --- Compatibilidade / variáveis úteis (não locais) ---
     arquivos=( "${_files[@]}" )
-    arquivos_count=${#arquivos[@]}
-    arquivos_first=${arquivos[0]}
 
-    local newest="${arquivos[0]}"
     for f in "${arquivos[@]:1}"; do
         [[ "$f" -nt "$newest" ]] && newest="$f"
     done
@@ -5803,15 +5806,10 @@ folder_create "/tmp/isl-download"
 islOnline_Dependencias(){
 echo -e "\n${G1}[Instalando Dependencias ISL Online. . .]${End}\n"
 check_repos
-local commandsList=(
-	"sudo apt update" 
-	"sudo dpkg --configure -a" 
-	"sudo apt-get -y --fix-broken install" 
-	"sudo apt-get -f -y install"
-    "sudo apt-get -y install libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-xkb1 libxkbcommon-x11-0"
-    "sudo apt-get -yq clean"
-)
-expectFunctionExecute
+sudo apt update
+comandosPreparacao
+sudo apt-get -y install libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-xkb1 libxkbcommon-x11-0
+sudo apt-get -yq clean
 }
 
 islOnline_LightClient() {

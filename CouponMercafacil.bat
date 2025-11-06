@@ -52,21 +52,28 @@ if !count! equ 34 (
     
     echo.
     echo ===== RESULTADO =====
-    echo ID-LOJA....: !id_loja!
-    echo DATA.......: !data_formatada!
-    echo HORA.......: !hora_formatada!
-    echo OPERADOR...: !operador!
-    echo ECF........: !ecf!
-    echo CUPOM......: !cupom!
+    echo ID-LOJA.......: !id_loja!
+    echo DATA..........: !data_formatada!
+    echo HORA..........: !hora_formatada!
+    echo ID-OPERADOR...: !operador!
+    echo ECF...........: !ecf!
+    echo CUPOM.........: !cupom!
     echo.
     echo FORMATADO: !resultado!
     
     :: Gera o comando SQL
-    set "sql_query=SELECT * FROM pdv.venda WHERE ecf = !ecf! AND DATA= '!data_sql!' AND id_loja = !id_loja! AND numerocupom = !cupom!"
+    rem set "sql_query_venda=SELECT * FROM pdv.venda WHERE ecf = !ecf! AND DATA= '!data_sql!' AND id_loja = !id_loja! AND numerocupom = !cupom!;"
+    rem set "sql_query_operador=SELECT * FROM pdv.operador WHERE id = !operador!;"
+    set "SQL_PART1=SELECT v.id_loja, l.descricao, v.DATA, v.horainicio, o.id, o.nome, o.matricula, v.ecf, v.numerocupom"
+    set "SQL_PART2=FROM pdv.venda AS v LEFT JOIN pdv.operador AS o ON o.id_loja=v.id_loja AND o.matricula=v.matricula"
+    set "SQL_PART3=INNER JOIN loja AS l ON v.id_loja=l.id"
+    set "SQL_PART4=WHERE v.ecf = !ecf! AND v.DATA = '!data_sql!' AND v.id_loja = !id_loja! AND numerocupom = !cupom!"
+    
+    set "SQL_QUERY=!SQL_PART1! !SQL_PART2! !SQL_PART3! !SQL_PART4!"
     
     echo.
     echo ===== COMANDO SQL =====
-    echo !sql_query!
+    echo !SQL_QUERY!
     
     :: CORREÇÃO: Usa arquivo temporário para copiar para clipboard
     echo !resultado! > temp_clip.txt
@@ -77,31 +84,31 @@ if !count! equ 34 (
     echo ? Codigo formatado copiado para area de transferencia!
     
     :: Cria arquivo com todos os resultados
-    echo ===== RESULTADO DA CONSULTA ===== > resultado.txt
-    echo. >> resultado.txt
-    echo Codigo original: %codigo% >> resultado.txt
-    echo Codigo limpo: !codigo! >> resultado.txt
-    echo. >> resultado.txt
-    echo === INFORMACOES FORMATADAS === >> resultado.txt
-    echo ID-LOJA....: !id_loja! >> resultado.txt
-    echo DATA.......: !data_formatada! >> resultado.txt
-    echo HORA.......: !hora_formatada! >> resultado.txt
-    echo OPERADOR...: !operador! >> resultado.txt
-    echo ECF........: !ecf! >> resultado.txt
-    echo CUPOM......: !cupom! >> resultado.txt
-    echo. >> resultado.txt
-    echo === FORMATO PADRAO === >> resultado.txt
-    echo !resultado! >> resultado.txt
-    echo. >> resultado.txt
-    echo === COMANDO SQL === >> resultado.txt
-    echo !sql_query! >> resultado.txt
-    echo. >> resultado.txt
-    echo Arquivo gerado em: %date% %time% >> resultado.txt
+    echo ===== RESULTADO DA CONSULTA ===== > %tmp%\resultado.txt
+    echo. >> %tmp%\resultado.txt
+    echo Codigo original: %codigo% >> %tmp%\resultado.txt
+    echo Codigo limpo: !codigo! >> %tmp%\resultado.txt
+    echo. >> %tmp%\resultado.txt
+    echo === INFORMACOES FORMATADAS === >> %tmp%\resultado.txt
+    echo ID-LOJA.......: !id_loja! >> %tmp%\resultado.txt
+    echo DATA..........: !data_formatada! >> %tmp%\resultado.txt
+    echo HORA..........: !hora_formatada! >> %tmp%\resultado.txt
+    echo ID-OPERADOR...: !operador! >> %tmp%\resultado.txt
+    echo ECF...........: !ecf! >> %tmp%\resultado.txt
+    echo CUPOM.........: !cupom! >> %tmp%\resultado.txt
+    echo. >> %tmp%\resultado.txt
+    echo === FORMATO PADRAO === >> %tmp%\resultado.txt
+    echo !resultado! >> %tmp%\resultado.txt
+    echo. >> %tmp%\resultado.txt
+    echo === COMANDO SQL === >> %tmp%\resultado.txt
+    echo !SQL_QUERY! >> %tmp%\resultado.txt
+    echo. >> %tmp%\resultado.txt
+    echo Arquivo gerado em: %date% %time% >> %tmp%\resultado.txt
     
     :: Abre o Notepad com o resultado
     echo.
     echo ? Abrindo resultado no Notepad...
-    notepad resultado.txt
+    notepad %tmp%\resultado.txt
     
 )
 
