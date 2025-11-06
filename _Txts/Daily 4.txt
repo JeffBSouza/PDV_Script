@@ -70069,14 +70069,17 @@ Ticket: 2481856
 
 =======================================================================
 
+1	LOJA 01	TRUE	TRUE	1	57.055.333/0001-35	AGROPECUARIA BOIADEIRO LTDA	AGROPECUARIA BOIADEIRO LTDA	SAO MIGUEL ARCANJO	SP	35
 
 
+AGROPECUARIA BOIADEIRO - 57.055.333/0001-35 - VRIntegrador
 
+https://account.islonline.net/start/ISLAlwaysOn?cmdline=%22password_md5%22+%22c5d7c5561d84f6a20e59bcdccb9093be%22+%22%2fVERYSILENT%22+%22grant_silent%22+%22zeJxtUj1PxDAMVUBsTEyMHQFB1KRN2o6MSAgkkJhucRKnhMslkDR3fCz8dAoj18XD8%2fN7frJHbQ%2fJzeNtdR%2b8C1jd4bSLaX1CRmcOSdvWWmsmukE0rNfIgYNmPVPCYjtgJ1DUQjFpVVdziUbY2jQSawNgByV6NIBKQ4%2bc8VrqDsC0pm8GJmXPRSeElkywBlXNh4YZO8gBZl5rms42vG%2b%2bSSYE%2fA4%2bcgxXF9RlH%2f%2f2pAGnU1IIYdVV9fQwlwfUuLkJeQIPJuYZuR4LJAPBxApeSp6wOlutcrTTDhI%2bx5JxdXFZ%2fYcseveKNMEm5v3uCCo59B6pggTeuAXKbAXbSC0kBwsSzxiSeytIJ3Tv6BLsU17QWkxzZKrKJ0xxn7GexQPQVyh%2bYX4NHwUCjd5tlw02kDT6Bd3fRsk0pgBjWQiXMMzC2fktnH%2bRg%2fL3JB3vmajlfMH2mByRH5IBzI4%3d%22+%22ignore_system_account%22+%22grant_password_md5%22+%22c5d7c5561d84f6a20e59bcdccb9093be%22+%22description%22+%22AGROPECUARIA BOIADEIRO - 57.055.333/0001-35 - VRIntegrador%22&__ISL+Network+Start__hide_gui=1 
 
 =======================================================================
 
 
-
+taskkill /f /im vrcheck*
 
 
 =======================================================================

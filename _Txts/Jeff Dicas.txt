@@ -9446,6 +9446,9 @@ cd $HOME/.vr ; docker compose -f docker-compose-sm-sc.yml stop vrintegrador-mong
 cd $HOME/.vr ; docker compose -f docker-compose-sm-sc.yml up
 ### Subir Container Integrador PDV Pro  ####################################################
 
+## Configurar mongo pai
+mongodb://IP_do_Integrador:27016/?directConnection=true
+
 ## Deletar imagem e subir novamente ####################################################
 cd $HOME/.vr ; sudo docker compose -f docker-compose-integrador.yml down
 sudo docker images
