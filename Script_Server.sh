@@ -3,10 +3,11 @@
 # https://storage.googleapis.com/linux-pdv/Jeff/Script_Server.sh
 # sudo mkdir -p /vr >/dev/null 2>&1; sudo chmod 777 /vr >/dev/null 2>&1; sudo rm -rf /vr/script_server.sh >/dev/null 2>&1; sudo wget -c --no-check-certificate https://storage.googleapis.com/linux-pdv/Jeff/Script_Server.sh -O /vr/script_server.sh; sudo chmod +x /vr/script_server.sh >/dev/null 2>&1; /vr/script_server.sh
 
-vrs=1.0
+vrs=1.1
 appsIco="https://storage.googleapis.com/linux-pdv/Jeff/LinuxFiles/img.zip"
 URLISLONELIN_LIGHTCLIENT="https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Linux/ISL_Light_ClientVR.zip"
 # URLISLONELIN_LIGHTCLIENT="https://www.islonline.net/start/ISLLightClient?custom=vrsoft-com-br"
+URLMONGODBCOMPASS="https://downloads.mongodb.com/compass/mongodb-compass_1.44.0_amd64.deb"
 EXPECTFILE="/tmp/ISLExpect/islDependencias.expect"
 URLRUSTDESK="https://github.com/rustdesk/rustdesk/releases/download/1.4.2/rustdesk-1.4.2-x86_64.deb"
 rustDeskvrs="1.4.2"
@@ -1603,6 +1604,37 @@ gerenciadorIfoodSetSpecificConfigs() {
     done
 }
 
+installApps() {
+  echo -e "\n[INFO] - Instalando Gedit - [ $(dateFull_Info) ]"
+  safe_apt install -y gedit
+
+  echo -e "\n[INFO] - Instalando Unrar - [ $(dateFull_Info) ]"
+  safe_apt install -y unrar
+}
+
+installMongoDB() {
+  local mongodbFile=mongodb-compass.deb
+  echo -e "\n[INFO] - Instalando MongoDB Compass - [ $(dateFull_Info) ]"
+  wget https://downloads.mongodb.com/compass/mongodb-compass_1.44.0_amd64.deb -O /tmp/$mongodbFile
+  safe_dpkg -i /tmp/$mongodbFile
+  sudo apt -f install
+  sudo rm -rf "/tmp/$mongodbFile" >/dev/null 2>&1
+}
+
+installDbeaver() {
+  echo -e "\n[INFO] - Instalando Dbeaver - [ $(dateFull_Info) ]"
+  wget -c --no-check-certificate https://dbeaver.io/files/dbeaver-ce_latest_amd64.deb -O /tmp/dbeaver-ce_latest_amd64.deb
+  safe_dpkg -i /tmp/dbeaver-ce_latest_amd64.deb
+  sudo rm -rf "/tmp/dbeaver-ce_latest_amd64.deb" >/dev/null 2>&1
+}
+
+installLibreOffice() {
+  echo -e "\n[INFO] - Instalando LibreOffice - [ $(dateFull_Info) ]"
+  safe_apt update -y
+  safe_apt install -y libreoffice
+  safe_apt install -y libreoffice-l10n-pt-br
+}
+
 menuJava() {
     clear
 	echo -e "\n==============================="
@@ -1824,9 +1856,10 @@ menuOptions() {
     echo "6. Instalar/Reinstalar Firebird para Concentrador"
     echo "7. Menu Java"
     echo "8. Menu VRGerenciador Ifood"
-	echo "9. Config Auto Restart App [Concentrador, Autorizador]"
-    echo "10. Config MercafacilCRM"
-    echo "11. SAIR"
+    echo "9. Menu Install Apps"
+	echo "10. Config Auto Restart App [Concentrador, Autorizador]"
+    echo "11. Config MercafacilCRM"
+    echo "12. SAIR"
 	read -p "Opcao: " OPTISLMENU
 
 	if [ -z "$OPTISLMENU" ] || ! [[ "$OPTISLMENU" =~ ^[0-9]+$ ]]; then
@@ -1868,10 +1901,46 @@ menuOptions() {
 	    menuGerenciadorIfood
 	fi
 	if [ $OPTISLMENU -eq 9 ]; then
+        echo ""
+        echo "=========================================="
+        echo "          MENU DE INSTALACAO"
+        echo "=========================================="
+        echo "Selecione o que deseja instalar:"
+        echo "1) Instalar Gedit e Unrar"
+        echo "2) Instalar MongoDB Compass"
+        echo "3) Instalar Dbeaver"
+        echo "4) Instalar LibreOffice"
+        echo "5) Cancelar"
+        echo "=========================================="
+        read -p "Opcao: " opcao
+
+        # Executa a função conforme a escolha
+        case "$opcao" in
+        1) 
+        installApps
+        menuOptions
+        ;;
+        2) 
+        installMongoDB
+        menuOptions
+        ;;
+        3) 
+        installDbeaver
+        menuOptions
+        ;;
+        4) 
+        installLibreOffice
+        menuOptions
+        ;;
+        5) echo "Operacao cancelada."; menuOptions;;
+        *) echo "Opcao invalida."; exit 1;;
+        esac
+	fi
+	if [ $OPTISLMENU -eq 10 ]; then
 	    setRestartAppsServer
         pause ; menuOptions
 	fi
-	if [ $OPTISLMENU -eq 10 ]; then
+	if [ $OPTISLMENU -eq 11 ]; then
         clear
         echo -e "\n============================================"
         echo -e "Assistente de configuracao MercafacilCRM Linux\n"
@@ -1883,10 +1952,10 @@ menuOptions() {
         finished
         menuOptions
 	fi
-	if [ $OPTISLMENU -eq 11 ]; then
+	if [ $OPTISLMENU -eq 12 ]; then
 	    exit
 	fi
-	if [ $OPTISLMENU -ge 12 ]; then
+	if [ $OPTISLMENU -ge 13 ]; then
 	echo -e "\nOpcao incorreta, retorne ao menu principal" ; pause ; menuOptions
 	fi
 }
