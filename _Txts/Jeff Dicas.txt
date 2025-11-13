@@ -3692,6 +3692,17 @@ WHERE id_tipoversaoservicosefaz=5
 AND id_tipoambientesefaz=1
 AND modelo='65' AND id_estado=35;
 
+SELECT
+l.id, l.descricao, e.descricao,
+s.servicoenvelope, s.urlwebservice, s.urlwebservicecontingencia
+FROM sefazwebservice AS s
+INNER JOIN fornecedor AS f ON f.id_estado=s.id_estado
+INNER JOIN loja AS l ON l.id_fornecedor=f.id AND l.id_situacaocadastro=1
+INNER JOIN estado AS e ON e.id=s.id_estado
+WHERE id_tipoversaoservicosefaz=5 AND id_tipoambientesefaz=1
+AND s.modelo='65' AND s.id_estado=35
+ORDER BY l.id, s.servicoenvelope;
+
 NFeAutorizacao4	https://nfce.fazenda.sp.gov.br/ws/NFeAutorizacao4.asmx
 NFeRetAutorizacao4	https://nfce.fazenda.sp.gov.br/ws/NFeRetAutorizacao4.asmx
 NFeStatusServico4	https://nfce.fazenda.sp.gov.br/ws/NFeStatusServico4.asmx
@@ -9441,13 +9452,19 @@ mongo --port 27016
 rs.initiate({_id:'rs0',members:[{_id:0,host:'COLOCAR IP DO INTEGRADOR:27016',priority:1}]})
 exit -- 2x
 
-cd $HOME/.vr ; docker compose -f docker-compose-sm-sc.yml stop vrintegradormaster
-cd $HOME/.vr ; docker compose -f docker-compose-sm-sc.yml stop vrintegrador-mongo
-cd $HOME/.vr ; docker compose -f docker-compose-sm-sc.yml up
+cd $HOME/.vr ; docker compose -f docker-compose-integrador.yml stop vrintegradormaster
+cd $HOME/.vr ; docker compose -f docker-compose-integrador.yml stop vrintegrador-mongo
+cd $HOME/.vr ; docker compose -f docker-compose-integrador.yml up
 ### Subir Container Integrador PDV Pro  ####################################################
 
 ## Configurar mongo pai
 mongodb://IP_do_Integrador:27016/?directConnection=true
+mongodb://localhost:27016/?directConnection=true
+mongodb://localhost:27017/?directConnection=true
+
+## Download Mongo Windows
+https://downloads.mongodb.com/compass/mongosh-2.5.9-win32-x64.zip
+
 
 ## Deletar imagem e subir novamente ####################################################
 cd $HOME/.vr ; sudo docker compose -f docker-compose-integrador.yml down
@@ -9458,29 +9475,29 @@ cd $HOME/.vr ; sudo docker compose -f docker-compose-integrador.yml up
 
 ### Infos apenas ####################################################
 ## Verifica se vrintegradormaster e o vrintegrador-mongo estão rodando
-docker compose -f docker-compose-sm-sc.yml ps
+docker compose -f docker-compose-integrador.yml ps
 ou
-sudo docker compose -f docker-compose-sm-sc.yml ps
+sudo docker compose -f docker-compose-integrador.yml ps
 
 ## reiniciar o vrintegradormaster
-docker compose -f docker-compose-sm-sc.yml restart vrintegradormaster
+docker compose -f docker-compose-integrador.yml restart vrintegradormaster
 ou
-sudo docker compose -f docker-compose-sm-sc.yml restart vrintegradormaster
+sudo docker compose -f docker-compose-integrador.yml restart vrintegradormaster
 
 ## reiniciar o vrintegrador-mongo
-docker compose -f docker-compose-sm-sc.yml restart vrintegrador-mongo
+docker compose -f docker-compose-integrador.yml restart vrintegrador-mongo
 ou
-sudo docker compose -f docker-compose-sm-sc.yml restart vrintegrador-mongo
+sudo docker compose -f docker-compose-integrador.yml restart vrintegrador-mongo
 
 ## consultar os logs do vrintegradormaster
-docker compose -f docker-compose-sm-sc.yml logs vrintegradormaster
+docker compose -f docker-compose-integrador.yml logs vrintegradormaster
 ou
-sudo docker compose -f docker-compose-sm-sc.yml logs vrintegradormaster
+sudo docker compose -f docker-compose-integrador.yml logs vrintegradormaster
 
 ## consultar os logs do vrintegrador-mongo
-docker compose -f docker-compose-sm-sc.yml logs vrintegrador-mongo
+docker compose -f docker-compose-integrador.yml logs vrintegrador-mongo
 ou
-sudo docker compose -f docker-compose-sm-sc.yml logs vrintegrador-mongo
+sudo docker compose -f docker-compose-integrador.yml logs vrintegrador-mongo
 ### Infos apenas ####################################################
 
 
@@ -10227,17 +10244,21 @@ ORDER BY l.id;
 
 
 SELECT
-l.id AS "Id Loja",l.descricao AS "Nome Loja",
-CASE WHEN l.geraconcentrador=TRUE THEN 'TRUE' ELSE NULL END AS "Gera Pacote Concentrador",
-CASE WHEN l.servidorcentral=TRUE THEN 'TRUE' ELSE NULL END AS "ServidorCentralPacotes",
-f.id AS "Id Fornecedor",
+f.nomefantasia AS "Nome Fantasia",
+l.descricao AS "Nome Loja",
 SUBSTRING(LPAD(f.cnpj::text, 14, '0') FROM 1 FOR 2) || '.' ||
 SUBSTRING(LPAD(f.cnpj::text, 14, '0') FROM 3 FOR 3) || '.' ||
 SUBSTRING(LPAD(f.cnpj::text, 14, '0') FROM 6 FOR 3) || '/' ||
 SUBSTRING(LPAD(f.cnpj::text, 14, '0') FROM 9 FOR 4) || '-' ||
 SUBSTRING(LPAD(f.cnpj::text, 14, '0') FROM 13 FOR 2) AS CNPJ,
-f.nomefantasia AS "Nome Fantasia",
-f.razaosocial  AS "Razao Social",m.descricao AS "Cidade",e.sigla AS "Estado",f.id_estado AS id_estado
+l.id AS "Id Loja",
+CASE WHEN l.geraconcentrador=TRUE THEN 'TRUE' ELSE NULL END AS "Gera Pacote Concentrador",
+CASE WHEN l.servidorcentral=TRUE THEN 'TRUE' ELSE NULL END AS "ServidorCentralPacotes",
+f.id AS "Id Fornecedor",
+f.razaosocial AS "Razao Social",
+m.descricao AS "Cidade",
+e.sigla AS "Estado",
+f.id_estado AS id_estado
 FROM loja l
 INNER JOIN fornecedor f ON l.id_fornecedor = f.id
 INNER JOIN estado e ON f.id_estado = e.id
@@ -10286,7 +10307,16 @@ sudo mkdir -p 777 /vr && sudo rm -rf /vr/script.sh && sudo touch /vr/script.sh &
 ## Instalando LightClient no Linux
 
 sudo mkdir /vr >/dev/null 2>&1
-sudo wget -c --no-check-certificate "https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Linux/ISL_Light_Client.zip" -O /vr/ISL_Light_Client.zip
+sudo wget -c --no-check-certificate "https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Linux/ISL_Light_ClientVR_x64.zip" -O /vr/ISL_Light_Client.zip
+sudo unzip -q -o /vr/ISL_Light_Client.zip -d /vr
+sudo rm -rf /vr/ISL_Light_Client.zip
+sudo mv /vr/ISL_Light_Client* /vr/ISL_Light_Client
+cd "/vr"
+./ISL_Light_Client
+
+
+sudo mkdir /vr >/dev/null 2>&1
+sudo wget -c --no-check-certificate "https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Linux/ISL_Light_Client_x86.zip" -O /vr/ISL_Light_Client.zip
 sudo unzip -q -o /vr/ISL_Light_Client.zip -d /vr
 sudo rm -rf /vr/ISL_Light_Client.zip
 sudo mv /vr/ISL_Light_Client* /vr/ISL_Light_Client

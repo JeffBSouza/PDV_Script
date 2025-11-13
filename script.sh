@@ -24,7 +24,7 @@
 
 # Declaracao de variaveis utilizadas nas funcoes.
 
-vrs=9.0.79
+vrs=9.0.81
 
 # Ano, Mes, Dia, Hora, Minuto, Segundos
 date=$(date '+%Y-%m-%d_%H:%M:%S')
@@ -127,6 +127,20 @@ NORMAL='\033[0m'
 
 # Paleta de Cores
 # =========================================================
+BANNER="\n\
+\033[38;5;202m██╗   ██╗\033[38;5;202m██████╗ \033[0m\n\
+\033[38;5;202m██║   ██║\033[38;5;202m██╔══██╗\033[0m\n\
+\033[38;5;208m██║   ██║\033[38;5;208m██████╔╝\033[0m\n\
+\033[38;5;208m██║   ██║\033[38;5;208m██╔══██╗\033[0m\n\
+\033[38;5;214m╚██████╔╝\033[38;5;214m██║  ██║\033[0m\n\
+\033[38;5;214m ╚═════╝ \033[38;5;214m╚═╝  ╚═╝\033[0m\n\
+\033[38;5;202m███████╗\033[38;5;202m██████╗ \033[38;5;202m███████╗\033[38;5;202m████████╗\033[38;5;202m██╗    ██╗\033[38;5;202m   ██╗ \033[38;5;202m██████╗ \033[38;5;202m███████╗\033[0m\n\
+\033[38;5;202m██╔════╝\033[38;5;202m██╔══██╗\033[38;5;202m██╔════╝\033[38;5;202m   ██╔══╝\033[38;5;202m██║    ██║\033[38;5;202m  ███║ \033[38;5;202m██╔══██╗\033[38;5;202m██╔════╝\033[0m\n\
+\033[38;5;208m███████╗\033[38;5;208m██║  ██║\033[38;5;208m█████╗  \033[38;5;208m   ██║   \033[38;5;208m██║ █╗ ██║\033[38;5;208m ██╔██║\033[38;5;208m██████╔╝\033[38;5;208m█████╗\033[0m\n\
+\033[38;5;208m╚════██║\033[38;5;208m██║  ██║\033[38;5;208m██╔══╝  \033[38;5;208m   ██║   \033[38;5;208m██║███╗██║\033[38;5;208m██████║\033[38;5;208m██╔══██╗\033[38;5;208m██╔══╝\033[0m\n\
+\033[38;5;214m███████║\033[38;5;214m██████╔╝\033[38;5;214m██║     \033[38;5;214m   ██║   \033[38;5;214m╚███╔███╔╝\033[38;5;214m██║╚██║\033[38;5;214m██║  ██║\033[38;5;214m███████╗\033[0m\n\
+\033[38;5;214m╚══════╝\033[38;5;214m╚═════╝ \033[38;5;214m╚═╝     \033[38;5;214m   ╚═╝   \033[38;5;214m ╚══╝╚══╝ \033[38;5;214m╚═╝ ╚═╝\033[38;5;214m╚═╝  ╚═╝\033[38;5;214m╚══════╝ \033[0m\n\
+\033[1;3;38;5;208m        V R S O F T W A R E    P D V    L I N U X\033[0m\n"
 
 URLCLISITEFINI="https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Linux/CliSiTef.ini"
 # URLSITEF="https://storage.googleapis.com/linux-pdv/Jeff/libsitef.zip"
@@ -144,7 +158,8 @@ URLISLONLINE="https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Linux/ISL_
 # URLISLONELIN_LIGHTCLIENT="https://account.islonline.net/start/ISLLightClient"
 # URLISLONELIN_LIGHTCLIENT="https://www.islonline.net/start/ISLLight?custom=vrsoft-com-br"
 # URLISLONELIN_LIGHTCLIENT="https://www.islonline.net/start/ISLLightClient?custom=vrsoft-com-br"
-URLISLONELIN_LIGHTCLIENT="https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Linux/ISL_Light_ClientVR.zip"
+URLISLONELIN_LIGHTCLIENT_x64="https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Linux/ISL_Light_ClientVR_x64.zip"
+URLISLONELIN_LIGHTCLIENT_x86="https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Linux/ISL_Light_ClientVR_x86.zip"
 URLRUSTDESK="https://github.com/rustdesk/rustdesk/releases/download/1.4.2/rustdesk-1.4.2-x86_64.deb"
 
 google="www.google.com.br"
@@ -244,6 +259,9 @@ fi
 startCheck() {
 libsitefinfo
 # checkVPNTEF
+if [[ ${LINUX_VERSION} == "20.04" ]]; then
+	ajustaFontSizeQterminal
+fi
 
 printf '%s\n' "$PASSWD" | sudo -S -p '' rm /etc/apt/sources.list.d/notepadqq-team-ubuntu-notepadqq-focal.list >/dev/null 2>&1
 printf '%s\n' "$PASSWD" | sudo -S -p '' rm /etc/apt/sources.list.d/notepadqq-team-ubuntu-notepadqq-focal.list.save >/dev/null 2>&1
@@ -2204,7 +2222,7 @@ subMenu() {
 
 	echo -e "\n${LNFP}--- Aplicativos ---${End}"
 	printf "%-3s %b\n" "5." "Teste Internet e FTPs"
-	printf "%-3s %b\n" "7." "Firefox / Gedit / Htop / CUPS (modulo de impressoes)"
+	printf "%-3s %b\n" "7." "Firefox / Gedit / Htop / BTOP / CUPS (modulo de impressoes)"
 	printf "%-3s %b\n" "8." "${G1}AnyDesk Install/Reinstall/Update/ResetID${End}"
 	printf "%-3s %b\n" "29." "${B1}RustDesk Install/Reinstall${End}"
 	printf "%-3s %b\n" "9." "Remover tela de Spider-Man/Alienigena"
@@ -2366,16 +2384,25 @@ firewallLinux() {
 }
 
 appsInstallReinstall() {
+check_repos
+sudo apt update
+sudo apt install -y build-essential
+comandosPreparacao
 
+echo -e "\n${G1}Instalando Firefox . . .${End}"
 printf '%s\n' "$PASSWD" | safe_apt_get -y install firefox
+echo -e "\n${G1}Instalando GEDIT . . .${End}"
 printf '%s\n' "$PASSWD" | safe_apt_get -yq install gedit
+echo -e "\n${G1}Instalando HTOP . . .${End}"
 printf '%s\n' "$PASSWD" | safe_apt_get -y install htop
+
+btopInstallReinstall
 
 appInstallReinstall_Onboard
 
 reinstallCups
 
-createRegisterLog "Apps_Firefox_Gedit_Htop"
+createRegisterLog "Apps_Firefox_Gedit_Htop_Btop"
 }
 
 appInstallReinstall_Onboard() {
@@ -4348,8 +4375,13 @@ echo ""
 echo "** Instalando ISL Light Client **"
 	islOnlineType=LightClient
 	islOnline_Dependencias && \
-	islOnline_LightClient && \
+	if [[ ${LINUX_VERSION} == "18.04" || ${LINUX_VERSION} == "16.04" ]]; then
+		islOnline_LightClient "$URLISLONELIN_LIGHTCLIENT_x86"
+	else
+		islOnline_LightClient "$URLISLONELIN_LIGHTCLIENT_x64"
+	fi && \
 	islOnline_Atalho && \
+	btopInstallReinstall && \
 	sleep 1
 separador
 echo ""
@@ -5787,7 +5819,11 @@ folder_create "/tmp/isl-download"
 	if [ $OPTISLMENU -eq 3 ]; then
 	islOnlineType=LightClient
 	islOnline_Dependencias
-	islOnline_LightClient
+	if [[ ${LINUX_VERSION} == "18.04" || ${LINUX_VERSION} == "16.04" ]]; then
+		islOnline_LightClient "$URLISLONELIN_LIGHTCLIENT_x86"
+	else
+		islOnline_LightClient "$URLISLONELIN_LIGHTCLIENT_x64"
+	fi
 	islOnline_Atalho
 	# VR Software - Suporte Remoto
 	fi
@@ -5813,16 +5849,17 @@ sudo apt-get -yq clean
 }
 
 islOnline_LightClient() {
+local URL="$1"
 local DESTINO=/pdv/util/isl_LightClient
 local FILE=$DESTINO/ISL_Light_Client
 
-echo -e "\Instalacao LightClient VR"
+echo -e "\nInstalacao LightClient VR"
 
     printf '%s\n' "$PASSWD" | sudo -S -p '' rm -rf $DESTINO 2>/dev/null
 	printf '%s\n' "$PASSWD" | sudo -S -p '' rm -rf $FILE 2>/dev/null
     folder_create "$DESTINO"
 
-    printf '%s\n' "$PASSWD" | sudo -S -p '' wget -c --no-check-certificate $URLISLONELIN_LIGHTCLIENT -O $DESTINO/ISL_Light_Client.zip 2>/dev/null
+    printf '%s\n' "$PASSWD" | sudo -S -p '' wget -c --no-check-certificate $URL -O $DESTINO/ISL_Light_Client.zip 2>/dev/null
 	printf '%s\n' "$PASSWD" | sudo -S -p '' unzip -q -o $DESTINO/ISL_Light_Client.zip -d $DESTINO 2>/dev/null
 	printf '%s\n' "$PASSWD" | sudo -S -p '' rm -rf $DESTINO/ISL_Light_Client.zip 2>/dev/null
     # printf '%s\n' "$PASSWD" | sudo -S -p '' mv $DESTINO/* $DESTINO/ISL_Light_Client >/dev/null 2>&1
@@ -6410,6 +6447,7 @@ autoUpdateScript() {
 	
 	clear
 	echo ""
+	echo -e "$BANNER"
 	echo -e "\n${Y1}⏳${End} ${LNFP}- Validando versao do Script . . . Aguarde . . . :D${End} - ${Y1}⏳${End}"
 	echo -e "${B1}ℹ️${End} ${LNFP}- Versao do arquivo: $vrs${End}\n"
 	
@@ -6466,7 +6504,7 @@ autoUpdateScript() {
 }
 
 download_script() {
-    local url="https://storage.googleapis.com/linux-pdv/Jeff/script-jeff.sh"
+    local url="https://storage.googleapis.com/linux-pdv/Jeff/script.sh"
     local output="/tmp/script.sh"
     local timeout="$1"
     local log_file="/tmp/wget.log"
@@ -6552,6 +6590,64 @@ killApp() {
 	printf '%s\n' "$PASSWD" | sudo -S -p '' pkill -9 $app >/dev/null 2>&1
 }
 
+ajustaFontSizeQterminal() {
+    local config_file="$HOME/.config/qterminal.org/qterminal.ini"
+    local backup_dir="$HOME/.config/qterminal.org"
+    local timestamp
+    timestamp=$(date '+%Y-%m-%d_%H:%M:%S')
+
+    [[ ! -f "$config_file" ]] && return 0
+
+    if grep -q '^fontSize=10$' "$config_file"; then
+        # Já está ajustado, então sai da função sem fazer nada
+        return 0
+    fi
+
+    local worker_cmd
+    worker_cmd=$(cat <<'EOF'
+CONFIG_FILE="$1"
+BACKUP_DIR="$2"
+TS="$3"
+
+while pgrep -u "$USER" -x qterminal >/dev/null; do
+    sleep 1
+done
+
+if [[ -f "$CONFIG_FILE" ]]; then
+    if grep -q '^fontSize=' "$CONFIG_FILE" && ! grep -q '^fontSize=10$' "$CONFIG_FILE"; then
+        cp -- "$CONFIG_FILE" "$BACKUP_DIR/qterminal_${TS}.ini" || exit 1
+        sed -i -E 's/^fontSize=[0-9]+/fontSize=10/' "$CONFIG_FILE"
+    fi
+fi
+EOF
+)
+
+    setsid bash -c "$worker_cmd" _ "$config_file" "$backup_dir" "$timestamp" >/dev/null 2>&1 &
+    disown >/dev/null 2>&1 || true
+}
+
+btopInstallReinstall() {
+
+check_repos
+sudo apt update
+sudo apt install -y build-essential
+comandosPreparacao
+
+if [[ ${LINUX_VERSION} == "18.04" || ${LINUX_VERSION} == "16.04" ]]; then
+	printf '%s\n' "$PASSWD" | sudo -S -p '' mkdir -p -m 777 "/tmp/btopTaskManager" 2>/dev/null
+	printf '%s\n' "$PASSWD" | sudo -S -p '' rm -rf /tmp/btopTaskManager/btop-i686-linux-musl.tbz 2>/dev/null
+	printf '%s\n' "$PASSWD" | sudo -S -p '' wget -c --no-check-certificate https://github.com/aristocratos/btop/releases/download/v1.2.13/btop-i686-linux-musl.tbz -O /tmp/btopTaskManager/btop-i686-linux-musl.tbz 2>/dev/null
+	printf '%s\n' "$PASSWD" | sudo -S -p '' tar -xvjf /tmp/btopTaskManager/btop-i686-linux-musl.tbz -C /tmp/btopTaskManager 2>/dev/null
+	echo -e "\n${G1}Instalando BTOP . . .${End}"
+	cd /tmp/btopTaskManager/btop
+	sudo ./install.sh
+fi
+if [[ ${LINUX_VERSION} == "20.04" ]]; then
+	echo -e "\n${G1}Instalando BTOP . . .${End}"
+	sudo snap install btop
+fi
+}
+
 menuOptions() {
 	
 	if [[ "$openpdv" == "false" ]]; then
@@ -6574,7 +6670,7 @@ menuOptions() {
 	printf '%s\n' "$PASSWD" | sudo -S -p '' chmod 777 -R /pdv/util 2>/dev/null
 	printf '%s\n' "$PASSWD" | sudo -S -p '' chown "$USER:firebird" -R /pdv/util 2>/dev/null
 
-	echo ""
+	echo -e "$BANNER"
 	separador
 	echo -e "          ${LNFP}MENU SUPORTE PDV LINUX${End}          | ${CM1}Vrs.$vrs${End}"
 	echo -e "${LFP}Linux instalado em:${End} ${CM1}$LINUX_INSTALL_DATE${End}"

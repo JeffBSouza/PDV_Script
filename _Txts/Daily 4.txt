@@ -70507,6 +70507,271 @@ Caused by: java.io.IOException: Foi for├ºado o cancelamento de uma conex├ú
 
 MERCADINHO DEUS TE PAGUE - LOJA 01 - 01.794.582/0001-98
 =======================================================================
+sudo apt update
+sudo apt install -y build-essential
+
+wget https://github.com/aristocratos/btop/releases/download/v1.2.13/btop-i686-linux-musl.tbz
+tar -xvjf btop-i686-linux-musl.tbz
+cd btop
+sudo ./install.sh
+
+
+=======================================================================
+
+
+
+sed -i -E 's/^fontSize=[0-9]+/fontSize=10/' ~/.config/qterminal.org/qterminal.ini
+
+=======================================================================
+
+
+https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Linux/ISL_Light_ClientVR.zip
+
+wget -c --no-check-certificate "https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Linux/ISL_Light_ClientVR.zip" -O /pdv/util/isl_LightClient/ISL_Light_Client.zip
+unzip -q -o /pdv/util/isl_LightClient/ISL_Light_Client.zip -d /pdv/util/isl_LightClient
+
+
+URLISLONELIN_LIGHTCLIENT_x64="https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Linux/ISL_Light_ClientVR_x64.zip"
+URLISLONELIN_LIGHTCLIENT_x86="https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Linux/ISL_Light_ClientVR_x86.zip"
+
+
+
+sudo mkdir /vr >/dev/null 2>&1
+sudo wget -c --no-check-certificate "https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Linux/ISL_Light_ClientVR_x64.zip" -O /vr/ISL_Light_Client.zip
+sudo unzip -q -o /vr/ISL_Light_Client.zip -d /vr
+sudo rm -rf /vr/ISL_Light_Client.zip
+sudo mv /vr/ISL_Light_Client* /vr/ISL_Light_Client
+cd "/vr"
+./ISL_Light_Client
+
+
+sudo mkdir /vr >/dev/null 2>&1
+sudo wget -c --no-check-certificate "https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Linux/ISL_Light_Client_x86.zip" -O /vr/ISL_Light_Client.zip
+sudo unzip -q -o /vr/ISL_Light_Client.zip -d /vr
+sudo rm -rf /vr/ISL_Light_Client.zip
+sudo mv /vr/ISL_Light_Client* /vr/ISL_Light_Client
+cd "/vr"
+./ISL_Light_Client
+=======================================================================
+
+sudo apt-get -y install libxcb-icccm4 
+sudo apt-get -y install libxcb-image0
+sudo apt-get -y install libxcb-keysyms1
+sudo apt-get -y install libxcb-xkb1
+sudo apt-get -y install libxkbcommon-x11-0
+
+=======================================================================
+
+
+39,99
+0,582
+23,27
+
+
+=======================================================================
+
+
+2487649
+
+nfce.contingenciaoffline=true
+=======================================================================
+
+
+
+nfce.certificado.senha=03261214
+nfce.idtoken=000001
+nfce.csc=617B1D4F64D0DA04E0531F5FA00A0851
+
+=======================================================================
+
+
+nfce.idtoken=
+nfce.csc=
+nfce.certificado.senha=
+nfce.certificado.tipo=A1
+nfce.tempoconexao=10
+nfce.tipoambiente=1
+nfce.certificado.diretorio=/vr/nfe/certificado/
+nfce.diretorio=/vr/nfe/
+nfce.enviaintermediador=true
+
+nfe.idtoken=
+nfe.csc=
+nfe.certificado.senha=
+nfe.certificado.tipo=A1
+nfe.tempoconexao=10
+nfe.tipoambiente=1
+nfe.certificado.diretorio=/vr/nfe/certificado/
+nfe.diretorio=/vr/nfe/
+
+
+=======================================================================
+
+
+11/11/2025 09:33:10			Falha no envio inicial compra CresceVendas, Comando: 157|{"registration":"39200340822","aux_coupon":"10101062528111125","items":[{"product_name":"ATUM 88 PEDACOS NATURAL 140GR","code":"7891167831582","unit_value":11.49,"quantity":1.0}]}, Retorno: Falha na requisição de envio de pedido de compra CresceVendas.
+
+
+=======================================================================
+
+PDV não respeitando linha nfce.contingenciaoffline=true e ainda acionando fluxo de transmissão da venda
+Ticket: 2487735
+
+
+=======================================================================
+
+SELECT
+* FROM pdv.venda
+WHERE chavenfce IN ('43251153873057000161651010000706471101733321','43251153873057000161651010000708541101735435','43251153873057000161651020000717451102747247');
+
+242530,242529,242531
+
+
+SELECT 
+    v.id,v.numerocupom,v.DATA,v.ecf,v.id_loja,l.descricao,COALESCE(v.chavecfe, '') AS chavecfe, COALESCE(v.chavenfce, '') AS chavenfce,
+    COALESCE(SUM(v.subtotalimpressora - v.valordesconto + v.valoracrescimo), 0) AS venda_total,
+    COALESCE(vi.soma_valortotal, 0) AS vendaitem_total,
+    COALESCE(vf.soma_valorfinalizadora, 0) AS vendafinalizadora_total
+FROM pdv.venda v
+LEFT JOIN (SELECT id_venda,COALESCE(SUM(valortotal - valorcancelado - valordesconto + valoracrescimo - valordescontocupom + valoracrescimocupom), 0) AS soma_valortotal
+FROM pdv.vendaitem GROUP BY id_venda) vi ON vi.id_venda = v.id
+LEFT JOIN (SELECT id_venda,COALESCE(SUM(valor - troco - doacao - trococarteiradigital), 0) AS soma_valorfinalizadora
+FROM pdv.vendafinalizadora GROUP BY id_venda) vf ON vf.id_venda = v.id
+LEFT JOIN pdv.vendanfce vn ON v.id=vn.id_venda
+INNER JOIN loja l ON l.id=v.id_loja
+WHERE 
+v.id in (242530,242529,242531) AND v.cancelado=false
+GROUP BY 
+v.id, v.numerocupom, v.subtotalimpressora, v.valordesconto, v.valoracrescimo,
+vi.soma_valortotal,vf.soma_valorfinalizadora,v.DATA,v.ecf,v.id_loja,l.descricao,v.chavecfe,v.chavenfce;
+
+--Venda
+SELECT COALESCE(SUM(v.subtotalimpressora - v.valordesconto + v.valoracrescimo), 0), v.subtotalimpressora, v.valordesconto, v.valoracrescimo, v.id, v.numerocupom, v.data, v.ecf, v.id_loja
+FROM pdv.venda AS v
+LEFT JOIN pdv.vendanfce vn ON v.id=vn.id_venda
+WHERE 1=1
+AND v.id IN (242530,242529,242531)
+--AND numerocupom in (XX) AND data in ('XX') AND ecf in (XX) AND id_loja=XX
+--AND vn.transmitido=false and vn.contingencia=true and vn.id_situacaonfce=0
+GROUP BY v.subtotalimpressora, v.valordesconto, v.valoracrescimo, v.id, v.numerocupom, v.data, v.ecf, v.id_loja;
+
+--VendaItem item a item
+SELECT vi.sequencia, vi.cancelado, vi.quantidade, vi.precovenda, vi.valortotal, vi.valordesconto, vi.valordescontocupom, 
+vi.valordescontopromocao, vi.valoracrescimo, vi.valoracrescimocupom, vi.id, p.descricaocompleta, vi.id_produto, vi.id_venda
+FROM pdv.vendaitem AS vi
+INNER JOIN produto AS p ON p.id=vi.id_produto
+WHERE id_venda in (242529) ORDER BY sequencia;
+
+SELECT sum(valordesconto) as valordesconto,sum(valordescontocupom) as valordescontocupom,sum(valordescontopromocao) as valordescontopromocao,
+sum(valoracrescimo) as valoracrescimo,sum(valoracrescimocupom) as valoracrescimocupom
+FROM pdv.vendaitem WHERE id_venda=XX;
+
+
+
+
+=======================================================================
+11/11/2025 11:07:43;0;0;Falha no envio inicial compra CresceVendas, Comando: 157|{"registration":"03810451533","aux_coupon":"10303037963111125","items":[{"product_name":"ACUCAR CRISTAL ALCON 5KG","code":"7898996103330","unit_value":13.99,"quantity":1.0}]}, Retorno: Falha na requisição de envio de pedido de compra CresceVendas.;3;Falha na requisição de envio de pedido de compra CresceVendas.
+
+vrautorizador.service.crescevendas.CresceVendasService.enviarPedidoInicialCompra(CresceVendasService.java:74)
+vrautorizador.gui.AutorizadorGUI.consultaDescontoCresceVendasV2(AutorizadorGUI.java:6438)
+vrautorizador.classe.MessageReceiver.run(MessageReceiver.java:455)
+java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+java.lang.Thread.run(Unknown Source)
+
+
+Falha Autorizador - Falha no envio inicial compra CresceVendas
+Ticket: 2488277
+
+=======================================================================
+
+
+
+2	LOJA 01 NOVA	TRUE	TRUE	719	10.886.088/0001-44	MERCADO AVENIDA COSMOPOLIS LTD	MERCADO AVENIDA	COSMOPOLIS	SP	35
+
+=======================================================================
+
+
+MERCADO AVENIDA COSMOPOLIS - LOJA 01 - 10.886.088/0001-44
+
+
+=======================================================================
+
+SELECT
+servicoenvelope,urlwebservice,urlwebservicecontingencia
+FROM sefazwebservice s
+WHERE id_tipoversaoservicosefaz=5
+AND id_tipoambientesefaz=1
+AND modelo='65' AND id_estado=35;
+
+NFeAutorizacao4	ttps://nfce.fazenda.sp.gov.br/ws/NFeAutorizacao4.asmx
+NFeRetAutorizacao4	ttps://nfce.fazenda.sp.gov.br/ws/NFeRetAutorizacao4.asmx
+NFeStatusServico4	ttps://nfce.fazenda.sp.gov.br/ws/NFeStatusServico4.asmx
+NFeConsultaProtocolo4	ttps://nfce.fazenda.sp.gov.br/ws/NFeConsultaProtocolo4.asmx
+NFeRecepcaoEvento4	ttps://nfce.fazenda.sp.gov.br/ws/NFeRecepcaoEvento4.asmx
+	ttps://www.nfce.fazenda.sp.gov.br/NFCeConsultaPublica/Paginas/ConsultaQRCode.aspx
+	ttps://www.nfce.fazenda.sp.gov.br/consulta
+NFeInutilizacao4	ttps://nfce.fazenda.sp.gov.br/ws/NFeInutilizacao4.asmx
+
+NFeAutorizacao4	ttps://nfce.fazenda.sp.gov.br/ws/NFeAutorizacao4.asmx	https://nfce.fazenda.sp.gov.br/ws/NFeAutorizacao4.asmx
+NFeRetAutorizacao4	ttps://nfce.fazenda.sp.gov.br/ws/NFeRetAutorizacao4.asmx	https://nfce.fazenda.sp.gov.br/ws/NFeRetAutorizacao4.asmx
+NFeInutilizacao4	ttps://nfce.fazenda.sp.gov.br/ws/NFeInutilizacao4.asmx	
+NFeConsultaProtocolo4	ttps://nfce.fazenda.sp.gov.br/ws/NFeConsultaProtocolo4.asmx	https://nfce.fazenda.sp.gov.br/ws/NFeConsultaProtocolo4.asmx
+NFeStatusServico4	ttps://nfce.fazenda.sp.gov.br/ws/NFeStatusServico4.asmx	https://www.svc.fazenda.gov.br/NFeStatusServico4/NFeStatusServico4.asmx
+NFeRecepcaoEvento4	ttps://nfce.fazenda.sp.gov.br/ws/NFeRecepcaoEvento4.asmx	https://nfce.fazenda.sp.gov.br/ws/NFeRecepcaoEvento4.asmx
+	ttps://www.nfce.fazenda.sp.gov.br/NFCeConsultaPublica/Paginas/ConsultaQRCode.aspx	
+	ttps://www.nfce.fazenda.sp.gov.br/consulta	
+
+
+
+
+=======================================================================
+
+NFeAutorizacao4	https://nfce.fazenda.sp.gov.br/ws/NFeAutorizacao4.asmx
+NFeRetAutorizacao4	https://nfce.fazenda.sp.gov.br/ws/NFeRetAutorizacao4.asmx
+NFeStatusServico4	https://nfce.fazenda.sp.gov.br/ws/NFeStatusServico4.asmx
+NFeConsultaProtocolo4	https://nfce.fazenda.sp.gov.br/ws/NFeConsultaProtocolo4.asmx
+NFeRecepcaoEvento4	https://nfce.fazenda.sp.gov.br/ws/NFeRecepcaoEvento4.asmx
+	https://www.nfce.fazenda.sp.gov.br/NFCeConsultaPublica/Paginas/ConsultaQRCode.aspx
+	https://www.nfce.fazenda.sp.gov.br/consulta
+NFeInutilizacao4	https://nfce.fazenda.sp.gov.br/ws/NFeInutilizacao4.asmx
+
+
+
+=======================================================================
+
+Instalando AlwaysON
+unzip:  cannot find or open /home/vrsoftware/Downloads/ISL_AlwaysOn*.zip, /home/vrsoftware/Downloads/ISL_AlwaysOn*.zip.zip or /home/vrsoftware/Downloads/ISL_AlwaysOn*.zip.ZIP.
+
+No zipfiles found.
+
+❌ Falha na extração ou arquivo estava vazio, arquivo em /home/vrsoftware/Downloads/ISL_AlwaysOn estava vazio.
+
+
+
+
+=======================================================================
+
+
+docker compose -f docker-compose-integrador.yml logs vrintegradormaster
+
+
+=======================================================================
+
+
+/usr/share/applications/mongodb-compass.desktop
+
+
+=======================================================================
+server@server:~$ cat 'Área de Trabalho'/vrconfig.desktop
+[Desktop Entry]
+Name=VRConfig
+Exec=xfce4-terminal -e vratalhos
+Terminal=false
+Type=Application
+Icon=vrgestor
+Categories=System
+server@server:~$ find / -iname "*vratalhos*" 2>/dev/null
+/usr/bin/vratalhos
 
 
 
@@ -70515,186 +70780,160 @@ MERCADINHO DEUS TE PAGUE - LOJA 01 - 01.794.582/0001-98
 =======================================================================
 
 
-
-
-
-=======================================================================
-
-
-
+39.802.407/0002-59|39.802.407/0003-30|39.802.407/0004-10|39.802.407/0005-00
 
 
 =======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
+{
+  "codigoOperador": 100002,
+  "nomeOperador": "AGNES",
+  "idLoja": 1,
+  "pdv": 3,
+  "dataHoraEntrada": "2025-10-15 15:19:16",
+  "dataHoraSaida": "2025-10-15 21:05:59",
+  "pausas": [],
+  "movimentacoes": [
+    {
+      "uuid": "ce2ecce0-a14e-11f0-9779-1e810b1882c6",
+      "valor": 250.00,
+      "codigoOperador": 100002,
+      "nomeOperador": "AGNES",
+      "observacao": "",
+      "tipo": 1,
+      "codigoMoeda": 986,
+      "dataHora": "2025-10-15 15:19:45",
+      "codigoOperadorAutorizacao": 100002,
+      "nomeOperadorAutorizacao": "AGNES",
+      "cotacao": 1,
+      "formaPagamento": 1,
+      "descricao": ""
+    },
+    {
+      "uuid": "7a380bd0-a17e-19f0-9278-1d929b1882c6",
+      "valor": 618.95,
+      "codigoOperador": 100002,
+      "nomeOperador": "AGNES",
+      "observacao": "",
+      "tipo": 2,
+      "codigoMoeda": 986,
+      "dataHora": "2025-10-15 21:04:53",
+      "codigoOperadorAutorizacao": 300002,
+      "nomeOperadorAutorizacao": "MAURICIO",
+      "cotacao": 1,
+      "formaPagamento": 1,
+      "descricao": ""
+    }
+  ],
+  "conferencia": []
+}
 
 
 
 
 =======================================================================
-
+http://192.168.0.3:27571/api/swagger-ui/index.html#/
 
 
 
 
 =======================================================================
 
+G T MOREIRA MERCEARIA - 05.269.842/0001-67 - VRIntegrador
+
+SUPERMERCADO ALTERNATIVO - ALTERNATIVO - 10.822.501/0001-07	1	TRUE	TRUE	1	SUPERMERCADO ALTERNATIVO LTDA	CURRAIS NOVOS	RN	24
+
+=======================================================================
+('35251044008001000158650430000017939043018846','35251044008001000158650200000010211020007004','35251044008001000158650200000010229020000010')
 
 
 
 
 =======================================================================
 
+select chavenfce,* from pdv.venda where data >= '2025-10-01' and chavenfce in 
+('35251044008001000158650430000017939043018846','35251044008001000158650200000010211020007004','35251044008001000158650200000010229020000010')
 
+35251044008001000158650430000017939043018846 - 5149115
+35251044008001000158650200000010211020007004 - 5304879
+
+select transmitido,contingencia,id_situacaonfce from pdv.vendanfce where id_venda in (5149115,5304879);
+UPDATE pdv.vendanfce SET id_situacaonfce=0, transmitido=FALSE, contingencia=TRUE WHERE id_venda in (5149115,5304879);
+
+
+select cancelado,canceladoemvenda from pdv.venda where id=5149115
+update pdv.venda set cancelado=false where id=5149115
+select * from pdv.vendaitem where id_venda=5149115
+update pdv.vendaitem set valorcancelado=0 where id_venda=5149115 and valorcancelado >0
+
+=======================================================================
+
+
+35251044008001000158650430000017939043018846 e 35251044008001000158650200000010211020007004
+Rejeição "O Conteudo do elemento ICMS nao esta complemeto" ocorrendo na 4.3.70
+Ticket: 2490354
+=======================================================================
+
+
+KOMPRAO ATACADO & VAREJO - LOJA 01 - 45.227.439/0001-90	3	TRUE		209	KOMPRAO ATACADO & VAREJO APIAI LTDA	APIAI	SP	35
+
+
+=======================================================================
+
+SUPERMERCADO KOMPRAO - LOJA 02	LOJA 02	54.456.532/0001-67	1	TRUE	TRUE	1	KOMPRAO ATACADO E VAREJO ITAPEVA	ITAPEVA	SP	35
+KOMPRA FORTE -LOJA 4	LOJA 04	43.477.639/0001-75	2	TRUE		272	ANA BEATRIZ SOUZA CHIODI BARBOSA LTDA	APIAI	SP	35
+KOMPRAO ATACADO & VAREJO	LOJA 01	45.227.439/0001-90	3	TRUE		209	KOMPRAO ATACADO & VAREJO APIAI LTDA	APIAI	SP	35
+
+=======================================================================
+
+select
+v.numerocupom, v.data, v.ecf
+from pdv.venda as v
+inner join pdv.vendanfce as vnfce on v.id=vnfce.id_venda
+where v.data>='2025-11-01'
+and vnfce.contingencia=true
+and motivorejeicao is not null
 
 
 
 =======================================================================
 
+SELECT
+v.id, v.numerocupom, v.DATA, v.ecf,
+vi.id_produto, vi2.id_aliquota, vi2.valoricms
+FROM pdv.venda AS v
+INNER JOIN pdv.vendaitem AS vi ON v.id=vi.id_venda
+INNER JOIN pdv.vendaitemimposto AS vi2 ON vi.id=vi2.id_vendaitem
+WHERE v.DATA >= '2025-10-01' and (v.cancelado=true or v.canceladoemvenda=true)
+AND vi2.valoricms <> 0
+and v.id=17498345
+17498345	301802	2025-10-01	102	109666	1.54
 
+select cancelado,canceladoemvenda,* from pdv.venda where id=17498345
+select cancelado,valorcancelado,* from pdv.vendaitem where id_venda=17498345 and id_produto in (109666,108805,104500)
 
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
+select * from aliquota where id in (3,19,78)
 
 
 =======================================================================
 
 
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
+VRGerenciadorIfood  |   at java.base/java.lang.Thread.run(Unknown Source) [?:?]
+VRGerenciadorIfood  | 16:29:43.825 [taskScheduler-3] INFO  EventsService - Iniciando importação de pedidos...
+VRGerenciadorIfood  | 16:29:43.826 [taskScheduler-3] INFO  MerchantsService - Captando mechants...
+VRGerenciadorIfood  | 16:29:43.830 [taskScheduler-3] ERROR EventsService - ERROR:
+VRGerenciadorIfood  | br.com.vrsoftware.vrgerenciadorifood.exception.InvalidTokenException: Token inválido, é necessário efetuar o login novamente!
+VRGerenciadorIfood  |   at br.com.vrsoftware.vrgerenciadorifood.service.auth.AuthDistributedAppService.checkToken(AuthDistributedAppService.java:181) ~[classes/:?]
+VRGerenciadorIfood  |   at br.com.vrsoftware.vrgerenciadorifood.service.AuthenticatedModuleService.sendWithAuth(AuthenticatedModuleService.java:30) ~[classes/:?]
+VRGerenciadorIfood  |   at br.com.vrsoftware.vrgerenciadorifood.service.AuthenticatedModuleService.sendWithAuth(AuthenticatedModuleService.java:23) ~[classes/:?]
+VRGerenciadorIfood  |   at br.com.vrsoftware.vrgerenciadorifood.service.merchant.v1.MerchantsService.listMerchants(MerchantsService.java:99) ~[classes/:?]
+VRGerenciadorIfood  |   at br.com.vrsoftware.vrgerenciadorifood.service.merchant.v1.MerchantsService.getMerchantsFromServer(MerchantsService.java:58) ~[classes/:?]
+VRGerenciadorIfood  |   at br.com.vrsoftware.vrgerenciadorifood.service.merchant.v1.MerchantsService.getMechants(MerchantsService.java:116) ~[classes/:?]
+VRGerenciadorIfood  |   at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(Unknown Source) ~[?:?]
+VRGerenciadorIfood  |   at java.base/java.lang.reflect.Method.invoke(Unknown Source) ~[?:?]
+VRGerenciadorIfood  |   at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:359) ~[spring-aop-6.2.0.jar:6.2.0]
+VRGerenciadorIfood  |   at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:723) ~[spring-aop-6.2.0.jar:6.2.0]
+VRGerenciadorIfood  |   at br.com.vrsoftware.vrgerenciadorifood.service.merchant.v1.MerchantsService$$SpringCGLIB$$0.getMechants(<generated>) ~[classes/:?]
+VRGerenciadorIfood  |   at br.com.vrsoftware.vrgerenciadorifood.service.events.v1.EventsService.runRoutine(EventsService.java:58) ~[classes/:?]
 
 
 

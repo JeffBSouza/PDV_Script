@@ -3,7 +3,7 @@
 # https://storage.googleapis.com/linux-pdv/Jeff/Script_Server.sh
 # sudo mkdir -p /vr >/dev/null 2>&1; sudo chmod 777 /vr >/dev/null 2>&1; sudo rm -rf /vr/script_server.sh >/dev/null 2>&1; sudo wget -c --no-check-certificate https://storage.googleapis.com/linux-pdv/Jeff/Script_Server.sh -O /vr/script_server.sh; sudo chmod +x /vr/script_server.sh >/dev/null 2>&1; /vr/script_server.sh
 
-vrs=1.1
+vrs=1.2
 appsIco="https://storage.googleapis.com/linux-pdv/Jeff/LinuxFiles/img.zip"
 URLISLONELIN_LIGHTCLIENT="https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Linux/ISL_Light_ClientVR.zip"
 # URLISLONELIN_LIGHTCLIENT="https://www.islonline.net/start/ISLLightClient?custom=vrsoft-com-br"
@@ -25,12 +25,29 @@ javaPath_8="/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java"
 javaPath_11="/usr/lib/jvm/java-11-openjdk-amd64/bin/java"
 javaPath_8x86="/usr/lib/jvm/java-8-openjdk-i386/jre/bin/java"
 
+BANNER="\n\
+\033[38;5;202m██╗   ██╗\033[38;5;202m██████╗ \033[0m\n\
+\033[38;5;202m██║   ██║\033[38;5;202m██╔══██╗\033[0m\n\
+\033[38;5;208m██║   ██║\033[38;5;208m██████╔╝\033[0m\n\
+\033[38;5;208m██║   ██║\033[38;5;208m██╔══██╗\033[0m\n\
+\033[38;5;214m╚██████╔╝\033[38;5;214m██║  ██║\033[0m\n\
+\033[38;5;214m ╚═════╝ \033[38;5;214m╚═╝  ╚═╝\033[0m\n\
+\033[38;5;202m███████╗\033[38;5;202m██████╗ \033[38;5;202m███████╗\033[38;5;202m████████╗\033[38;5;202m██╗    ██╗\033[38;5;202m   ██╗ \033[38;5;202m██████╗ \033[38;5;202m███████╗\033[0m\n\
+\033[38;5;202m██╔════╝\033[38;5;202m██╔══██╗\033[38;5;202m██╔════╝\033[38;5;202m   ██╔══╝\033[38;5;202m██║    ██║\033[38;5;202m  ███║ \033[38;5;202m██╔══██╗\033[38;5;202m██╔════╝\033[0m\n\
+\033[38;5;208m███████╗\033[38;5;208m██║  ██║\033[38;5;208m█████╗  \033[38;5;208m   ██║   \033[38;5;208m██║ █╗ ██║\033[38;5;208m ██╔██║\033[38;5;208m██████╔╝\033[38;5;208m█████╗\033[0m\n\
+\033[38;5;208m╚════██║\033[38;5;208m██║  ██║\033[38;5;208m██╔══╝  \033[38;5;208m   ██║   \033[38;5;208m██║███╗██║\033[38;5;208m██████║\033[38;5;208m██╔══██╗\033[38;5;208m██╔══╝\033[0m\n\
+\033[38;5;214m███████║\033[38;5;214m██████╔╝\033[38;5;214m██║     \033[38;5;214m   ██║   \033[38;5;214m╚███╔███╔╝\033[38;5;214m██║╚██║\033[38;5;214m██║  ██║\033[38;5;214m███████╗\033[0m\n\
+\033[38;5;214m╚══════╝\033[38;5;214m╚═════╝ \033[38;5;214m╚═╝     \033[38;5;214m   ╚═╝   \033[38;5;214m ╚══╝╚══╝ \033[38;5;214m╚═╝ ╚═╝\033[38;5;214m╚═╝  ╚═╝\033[38;5;214m╚══════╝ \033[0m\n\
+\033[1;3;38;5;208m        V R S O F T W A R E    S E R V I D O R    L I N U X\033[0m\n"
+
 askSudo() {
 	clear
 if [ $UID -eq 0 ]; then
     echo -e "O script nao deve ser executado utilizando o usuario root.\nPor gentileza execute novamente e digite a senha somente quando solicitada."
     exit
 else
+	echo -e "$BANNER"
+    echo ""
     read -s -p "Digite a senha de root: " PASSWD
     TESTPASSWD=$(printf '%s\n' "$PASSWD" | sudo -S -p '' touch /root/.passtest >/dev/null 2>&1; echo $?)
     if [ "$TESTPASSWD" -ne 0 ]; then
@@ -340,10 +357,8 @@ fi
 # islOnline_Dependencias
 
 printf '%s\n' "$PASSWD" | sudo -S -p '' rm -rf "/tmp/isl-download"
-printf '%s\n' "$PASSWD" | sudo -S -p '' rm -rf "$HOME/Downloads"/ISL_AlwaysOn*.zip
 printf '%s\n' "$PASSWD" | sudo -S -p '' mkdir -p -m 777 "/tmp/isl-download"
-printf '%s\n' "$PASSWD" | sudo -S -p '' unzip -q -o "$HOME/Downloads/ISL_AlwaysOn*.zip" -d "/tmp/isl-download/ISL_AlwaysOn"
-printf '%s\n' "$PASSWD" | sudo -S -p '' rm -rf "$HOME/Downloads"/ISL_AlwaysOn*.zip
+printf '%s\n' "$PASSWD" | sudo -S -p '' unzip -q -o "$HOME/Downloads"/ISL_AlwaysOn*.zip -d "/tmp/isl-download/ISL_AlwaysOn"
 shopt -s nullglob
 DESTINO="/tmp/isl-download"
 local checkFile=("$DESTINO"/*)
@@ -353,6 +368,7 @@ if [ ${#checkFile[@]} -eq 0 ]; then
     exit
 fi
 shopt -u nullglob
+printf '%s\n' "$PASSWD" | sudo -S -p '' rm -rf "$HOME/Downloads"/ISL_AlwaysOn*.zip
 LOGFILE="/tmp/install_log.txt"
 
 {
@@ -1605,24 +1621,45 @@ gerenciadorIfoodSetSpecificConfigs() {
 }
 
 installApps() {
+    check_repos
+    sudo apt update
+    sudo apt install -y build-essential
+    comandosPreparacao
+
   echo -e "\n[INFO] - Instalando Gedit - [ $(dateFull_Info) ]"
   safe_apt install -y gedit
 
   echo -e "\n[INFO] - Instalando Unrar - [ $(dateFull_Info) ]"
   safe_apt install -y unrar
+  echo -e "\n[INFO] - Instalando BTop - [ $(dateFull_Info) ]"
+  safe_apt install -y btop
 }
 
 installMongoDB() {
   local mongodbFile=mongodb-compass.deb
   echo -e "\n[INFO] - Instalando MongoDB Compass - [ $(dateFull_Info) ]"
+  sudo rm -rf "/tmp/$mongodbFile" >/dev/null 2>&1
   wget https://downloads.mongodb.com/compass/mongodb-compass_1.44.0_amd64.deb -O /tmp/$mongodbFile
   safe_dpkg -i /tmp/$mongodbFile
   sudo apt -f install
   sudo rm -rf "/tmp/$mongodbFile" >/dev/null 2>&1
+if [ -e "/usr/share/applications/mongodb-compass.desktop" ]; then
+    desktopDirs=( "$HOME/Desktop" "$HOME/Área de Trabalho" "$HOME/Área de trabalho" )
+    for dir in "${desktopDirs[@]}"; do
+        if [ -d "$dir" ]; then
+			if [ ! -e "$dir/mongodb-compass.desktop" ]; then
+            	printf '%s\n' "$PASSWD" | sudo -S -p '' ln -sf "/usr/share/applications/mongodb-compass.desktop" "$dir/mongodb-compass.desktop" >/dev/null 2>&1
+				printf '%s\n' "$PASSWD" | sudo -S -p '' chmod +x "$dir/mongodb-compass.desktop" >/dev/null 2>&1
+				printf '%s\n' "$PASSWD" | sudo -S -p '' chmod 777 "$dir/mongodb-compass.desktop" >/dev/null 2>&1
+			fi
+        fi
+    done
+fi
 }
 
 installDbeaver() {
   echo -e "\n[INFO] - Instalando Dbeaver - [ $(dateFull_Info) ]"
+  sudo rm -rf "/tmp/dbeaver-ce_latest_amd64.deb" >/dev/null 2>&1
   wget -c --no-check-certificate https://dbeaver.io/files/dbeaver-ce_latest_amd64.deb -O /tmp/dbeaver-ce_latest_amd64.deb
   safe_dpkg -i /tmp/dbeaver-ce_latest_amd64.deb
   sudo rm -rf "/tmp/dbeaver-ce_latest_amd64.deb" >/dev/null 2>&1
@@ -1846,20 +1883,21 @@ menuGerenciadorIfood() {
 
 menuOptions() {
     clear
+	echo -e "$BANNER"
     echo -e "\n=======================vrs: $vrs"
-	echo -e "Nome da maquina: $(uname -n) / IP: $(hostname -I)\n"
+    echo -e "MENU SUPORTE SERVIDOR LINUX"
+	echo -e "Nome da maquina: $(uname -n) / IP: $(hostname -I)"
+    echo -e "========================"
 	echo "1. AlwaysOn (Necessario download do ISL_AlwaysOn via firefox previamente)"
 	echo "2. ISL_Light_Client - Acesso monitorado e unico"
 	echo "3. Dependencias ISL (Light Client e AlwaysOn)"
-    echo "4. Instalar Firefox"
-    echo "5. Instalar RustDesk"
-    echo "6. Instalar/Reinstalar Firebird para Concentrador"
-    echo "7. Menu Java"
-    echo "8. Menu VRGerenciador Ifood"
-    echo "9. Menu Install Apps"
-	echo "10. Config Auto Restart App [Concentrador, Autorizador]"
-    echo "11. Config MercafacilCRM"
-    echo "12. SAIR"
+    echo "4. Instalar/Reinstalar Firebird para Concentrador"
+    echo "5. Menu Java"
+    echo "6. Menu VRGerenciador Ifood"
+    echo "7. Menu Install Apps"
+	echo "8. Config Auto Restart App [Concentrador, Autorizador]"
+    echo "9. Config MercafacilCRM"
+    echo "10. SAIR"
 	read -p "Opcao: " OPTISLMENU
 
 	if [ -z "$OPTISLMENU" ] || ! [[ "$OPTISLMENU" =~ ^[0-9]+$ ]]; then
@@ -1883,34 +1921,28 @@ menuOptions() {
         finished ; pause ; menuOptions
 	fi
 	if [ $OPTISLMENU -eq 4 ]; then
-	    firefox
-        finished ; pause ; menuOptions
-	fi
-	if [ $OPTISLMENU -eq 5 ]; then
-	    rustdeskInstallReinstall
-        finished ; pause ; menuOptions
-	fi
-	if [ $OPTISLMENU -eq 6 ]; then
 	    firebirdPDVInstall
         finished ; pause ; menuOptions
 	fi
-	if [ $OPTISLMENU -eq 7 ]; then
+	if [ $OPTISLMENU -eq 5 ]; then
 	    menuJava
 	fi
-	if [ $OPTISLMENU -eq 8 ]; then
+	if [ $OPTISLMENU -eq 6 ]; then
 	    menuGerenciadorIfood
 	fi
-	if [ $OPTISLMENU -eq 9 ]; then
+	if [ $OPTISLMENU -eq 7 ]; then
         echo ""
         echo "=========================================="
         echo "          MENU DE INSTALACAO"
         echo "=========================================="
         echo "Selecione o que deseja instalar:"
-        echo "1) Instalar Gedit e Unrar"
+        echo "1) Instalar Gedit | Unrar | BTop"
         echo "2) Instalar MongoDB Compass"
         echo "3) Instalar Dbeaver"
         echo "4) Instalar LibreOffice"
-        echo "5) Cancelar"
+        echo "5) Instalar Firefox"
+        echo "6) Instalar RustDesk"
+        echo "7) Cancelar"
         echo "=========================================="
         read -p "Opcao: " opcao
 
@@ -1932,15 +1964,23 @@ menuOptions() {
         installLibreOffice
         menuOptions
         ;;
-        5) echo "Operacao cancelada."; menuOptions;;
+        5) 
+        firefox
+        menuOptions
+        ;;
+        6) 
+        rustdeskInstallReinstall
+        menuOptions
+        ;;
+        7) echo "Operacao cancelada."; menuOptions;;
         *) echo "Opcao invalida."; exit 1;;
         esac
 	fi
-	if [ $OPTISLMENU -eq 10 ]; then
+	if [ $OPTISLMENU -eq 8 ]; then
 	    setRestartAppsServer
         pause ; menuOptions
 	fi
-	if [ $OPTISLMENU -eq 11 ]; then
+	if [ $OPTISLMENU -eq 9 ]; then
         clear
         echo -e "\n============================================"
         echo -e "Assistente de configuracao MercafacilCRM Linux\n"
@@ -1952,10 +1992,10 @@ menuOptions() {
         finished
         menuOptions
 	fi
-	if [ $OPTISLMENU -eq 12 ]; then
+	if [ $OPTISLMENU -eq 10 ]; then
 	    exit
 	fi
-	if [ $OPTISLMENU -ge 13 ]; then
+	if [ $OPTISLMENU -ge 11 ]; then
 	echo -e "\nOpcao incorreta, retorne ao menu principal" ; pause ; menuOptions
 	fi
 }
