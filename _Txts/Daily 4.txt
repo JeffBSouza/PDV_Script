@@ -70940,7 +70940,35 @@ VRGerenciadorIfood  |   at br.com.vrsoftware.vrgerenciadorifood.service.events.v
 =======================================================================
 
 
+Farscape (1999) Season 01 S01 (1080p BluRay x265 HEVC AAC 5.1 Joy...
 
+
+
+=======================================================================
+
+
+HAAK SUPERMERCADO LTDA	SP-LOJA 01	40.733.893/0001-07	1	TRUE	TRUE	376	HAAK SUPERMERCADO LTDA	SAO ROQUE	SP	35
+
+HAAK SUPERMERCADO LTDA - SP-LOJA 01 - 40.733.893/0001-07
+=======================================================================
+
+teste
+
+
+
+=======================================================================
+
+Tipo Emissor no Cadastro de PDV = HOMOLOGAÇÃO
+printer: 2 no .env e no config.yml
+set "CONFIG_PATH=C:\VRPdv\config\config.yml"
+set "ENV_PATH=C:\VRPdv\data\flutter_assets\.env"
+
+
+
+=======================================================================
+545145	2025-11-06	277076	1	102	2156855	47703	1.000	4.000	32552	UPDATE pdv.vendapromocaoproduto SET quantidade = 1.000 WHERE id_venda = 545145 AND id_produto = 47703 AND id = 32552;
+
+545145	2025-11-06	277076	1	102	2156855	47703	1.000	4.000	32552	UPDATE pdv.vendapromocaoproduto SET quantidade = 1.000 WHERE id_venda = 545145 AND id_produto = 47703 AND id = 32552;
 
 
 =======================================================================
@@ -70950,52 +70978,55 @@ VRGerenciadorIfood  |   at br.com.vrsoftware.vrgerenciadorifood.service.events.v
 
 
 =======================================================================
+SELECT 
+v.id AS id_venda, v.data, v.numerocupom, v.id_loja, v.ecf,
+vi_sum.id_produto, vi_sum.qtd_total_itens AS qtdade_vendaitem,
+vpp.quantidade AS qtdade_vendapromocao, vpp.id AS id_vpp,
+    'UPDATE pdv.vendapromocaoproduto SET quantidade = ' || vi_sum.qtd_total_itens || 
+    ' WHERE id_venda = ' || v.id || 
+    ' AND id_produto = ' || vi_sum.id_produto || 
+    ' AND id = ' || vpp.id || ';' AS update_command
+FROM pdv.vendapromocaoproduto AS vpp
+INNER JOIN (
+    SELECT 
+        id_venda, id_produto,
+        SUM(quantidade) AS qtd_total_itens
+    FROM pdv.vendaitem
+    GROUP BY id_venda, id_produto
+) AS vi_sum 
+    ON vi_sum.id_venda = vpp.id_venda 
+   AND vi_sum.id_produto = vpp.id_produto
+INNER JOIN pdv.venda AS v ON v.id = vpp.id_venda
+WHERE v.data >= '2025-10-01'
+  AND vi_sum.qtd_total_itens < vpp.quantidade
+ORDER BY v.data, v.id, vi_sum.id_produto;
 
 
+
+
+=======================================================================
+[    1.540288] usb 2-2: new full-speed USB device number 3 using ohci-pci
+[    1.849988] usb 2-2: New USB device found, idVendor=0471, idProduct=0055, bcdDevice= 1.00
+[    1.849998] usb 2-2: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+[    1.850000] usb 2-2: Product: GP-C80250 Series
+[    1.850002] usb 2-2: Manufacturer: Gainscha Network Inc
+[    1.850004] usb 2-2: SerialNumber: 12345678
+
+
+
+
+SUPERMERCADO MARQUES LTDA	SM. PRODUTOR	19.372.777/0001-05	1	TRUE	TRUE	300	SUPERMERCADO MARQUES LTDA	CAMPO GRANDE	MS	50
+=======================================================================
+
+SUPERMERCADO MARQUES LTDA - 19.372.777/0001-05
 
 
 
 =======================================================================
 
 
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
+Nota Fiscal PARAENSE em Selfcheckout ao invés de Nota Fiscal PARANAENSE
+2492384
 
 =======================================================================
 
