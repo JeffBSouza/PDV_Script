@@ -71037,6 +71037,25 @@ Nota Fiscal PARAENSE em Selfcheckout ao invés de Nota Fiscal PARANAENSE
 =======================================================================
 
 
+GT Final = GT Inicial (GT Final do mapa resumo do dia anterior) + Venda Log + Cancel. Log + Desconto
+Cancelamento = Cancel Log
+Desconto = Desconto
+Acréscimo = Acréscimo
+
+
+=======================================================================
+
+SELECT
+p.descricaocompleta,COALESCE(p.id,0),
+COALESCE(pa.codigobarras,0),p.precovenda,
+p.oferta,p.preconormaloferta,
+p.precoofertaconnect,p.id_tipooferta,
+p.cashback,p.ID_SITUACAOCADASTRO,
+pa.CODIGOBARRAS,pa.TIPOEMBALAGEM,pa.PESOBRUTO,
+pa.DESCONTO 
+FROM produto p
+LEFT JOIN produtoautomacao pa ON p.id=pa.id_produto
+WHERE p.id IN (24797);
 
 
 
@@ -71044,14 +71063,13 @@ Nota Fiscal PARAENSE em Selfcheckout ao invés de Nota Fiscal PARANAENSE
 
 
 
-
-
-=======================================================================
-
-
-
-
-
+[VRConcentrador: ON | VRAutorizador: ON]  [14:30:43] [TecladoKeyEventDispatcher] TECLA: 144 - ?
+[VRConcentrador: ON | VRAutorizador: ON]  [14:30:54] [BalancaPadrao] null
+[VRConcentrador: ON | VRAutorizador: ON]  [14:30:55] [Display] LENDO BALANCA...
+[VRConcentrador: ON | VRAutorizador: ON]  [14:30:55] [BalancaPadrao] null
+[VRConcentrador: ON | VRAutorizador: ON]  [14:30:56] [Display] LENDO BALANCA...
+[VRConcentrador: ON | VRAutorizador: ON]  [14:30:56] [BalancaPadrao] null
+[VRConcentrador: ON | VRAutorizador: ON]  [14:30:57] [Display] LENDO BALANCA...
 =======================================================================
 
 
