@@ -893,7 +893,7 @@ SELECT * FROM chave WHERE chave in(MD5('09454577000148072023connect2'))
 ========================================================================
 ## Ambiente connect
 8076873000190
-37ac63488f97e60f39e6ebe8e6f33dca0b9d7681adcb8afd9a9bf0ddc92bf0f8	
+37ac63488f97e60f39e6ebe8e6f33dca0b9d7681adcb8afd9a9bf0ddc92bf0f8
 https://api.mobilesim.com.br
 https://simmanager.mobilesim.com.br/login	desenvolvimento@vrsoft.com.br	@VRsoft2024	
 https://simservices.mobilesim.com.br/	esdras.silva@vrsoft.com.br	@VRSoftware2024	

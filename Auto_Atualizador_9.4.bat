@@ -702,6 +702,7 @@ rem ---- LINKS BIOMETRIA -----
 set biometria_hamsterdx="https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Biometria/HamsterDX_Win.zip"
 set biometria_controlid_idbio="https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Biometria/ControlID_IDBio.zip"
 set biometria_futronic="https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Biometria/Futronic_Package.zip"
+set biometria_digitalpersona="https://storage.googleapis.com/linux-pdv/Jeff/PDV_Files/Biometria/DigitalPersona_Package.zip"
 rem ---- LINKS BIOMETRIA -----
 rem ---- LINKS UTEIS -----
 rem ---- LINKS UTEIS -----
@@ -839,15 +840,17 @@ echo:
 echo * 1. ControlID
 echo * 2. Futronic
 echo * 3. Hamster DX (HFDU06 e HFDU06R)
-echo * 4. Voltar Menu Drivers
-echo * 5. Voltar Menu Principal
+echo * 4. Digital Persona
+echo * 5. Voltar Menu Drivers
+echo * 6. Voltar Menu Principal
 set /p opcaoUteis= Escolha uma opcao: 
 if %opcaoUteis% equ 1 call :standardFileDown "%biometria_controlid_idbio%" "%FILES_FOLDER%\DriverBiometriaControlID.zip" "Biometria Control ID" && call :standardZipExtract "%FILES_FOLDER%\DriverBiometriaControlID.zip" "Biometria Control ID" "%FILES_FOLDER%" && goto menu
 if %opcaoUteis% equ 2 call :standardFileDown "%biometria_futronic%" "%FILES_FOLDER%\DriverBiometriaFutronic.zip" "Biometria Futronic" && call :standardZipExtract "%FILES_FOLDER%\DriverBiometriaFutronic.zip" "Biometria Futronic" "%FILES_FOLDER%" && goto menu
 if %opcaoUteis% equ 3 call :standardFileDown "%biometria_hamsterdx%" "%FILES_FOLDER%\DriverBiometriaHamsterDX.zip" "Biometria Hamster DX" && call :standardZipExtract "%FILES_FOLDER%\DriverBiometriaHamsterDX.zip" "Biometria Hamster DX" "%FILES_FOLDER%" && goto menu
-if %opcaoUteis% equ 4 goto menudrivers
-if %opcaoUteis% equ 5 goto menu
-if %opcaoUteis% GEQ 6 call :opcaoinexistente menu
+if %opcaoUteis% equ 4 call :standardFileDown "%biometria_digitalpersona%" "%FILES_FOLDER%\DriverBiometriaDigitalPersona.zip" "Digital Persona" && call :standardZipExtract "%FILES_FOLDER%\DriverBiometriaDigitalPersona.zip" "Digital Persona" "%FILES_FOLDER%" && goto menu
+if %opcaoUteis% equ 5 goto menudrivers
+if %opcaoUteis% equ 6 goto menu
+if %opcaoUteis% GEQ 7 call :opcaoinexistente menu
 if %opcaoUteis% EQU 0 call :opcaoinexistente menu
 REM #################### menuutil ####################
 

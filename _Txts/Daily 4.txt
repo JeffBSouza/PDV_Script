@@ -71071,11 +71071,41 @@ WHERE p.id IN (24797);
 [VRConcentrador: ON | VRAutorizador: ON]  [14:30:56] [BalancaPadrao] null
 [VRConcentrador: ON | VRAutorizador: ON]  [14:30:57] [Display] LENDO BALANCA...
 =======================================================================
+[VRConcentrador: ON | VRAutorizador: ON]  [10:27:18] [GerarXmlNFCe] keystore password was incorrect
+[VRConcentrador: ON | VRAutorizador: ON]  [10:27:18] [NovoRecebimento] Erro inesperado ao processar recebimento: Erro ao finalizar a venda: keystore password was incorrect
+ERRO: Erro ao finalizar a venda: keystore password was incorrect
 
 
 
 
+=======================================================================
 
+
+cd $HOME/.vr ; docker compose -f docker-compose-integrador.yml stop vrintegradormaster
+cd $HOME/.vr ; docker compose -f docker-compose-integrador.yml up
+
+
+=======================================================================
+
+Mensagem de "Voce nao tem permissao" para tentar cancelar cupons no Repositorio NFCe
+Ticket: 2496823
+
+SUPERMERCADO JERUSALEM 	37.668.086/0001-35
+=======================================================================
+
+Lentidão em banco devido query CresceVendas
+Ticket: 2497500
+
+
+=======================================================================
+2000050007402000000001
+2004646000040181125023
+
+
+2000 05000 74020 00000 074
+
+200169 0007 4020 0000 0074
+200169 0000 0500 0000 0074
 =======================================================================
 
 
@@ -71085,40 +71115,24 @@ WHERE p.id IN (24797);
 =======================================================================
 
 
+1	SP-LOJA 01	TRUE	TRUE	376	40.733.893/0001-07	HAAK SUPERMERCADO LTDA	HAAK SUPERMERCADO LTDA	SAO ROQUE	SP	35
 
-
-
+40.733.893/0001-07 - HAAK
 =======================================================================
 
 
-
-
-
-=======================================================================
-
-
-
-
+Produtos com divergência de valores na coluna "quantidade" entre as tabelas "pdv.vendaitem" e "pdv.vendapromocaoproduto"
+Ticket: 2498826
 
 =======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
-
-
-
-
-
-=======================================================================
+	update_command
+UPDATE pdv.vendapromocaoproduto SET quantidade = 48.000 WHERE id_venda = 545640 AND id_produto = 47703 AND id = 32706;
+UPDATE pdv.vendapromocaoproduto SET quantidade = 12.000 WHERE id_venda = 546362 AND id_produto = 10050 AND id = 32754;
+UPDATE pdv.vendapromocaoproduto SET quantidade = 24.000 WHERE id_venda = 546362 AND id_produto = 36762 AND id = 32756;
+UPDATE pdv.vendapromocaoproduto SET quantidade = 6.000 WHERE id_venda = 546362 AND id_produto = 47703 AND id = 32755;
+UPDATE pdv.vendapromocaoproduto SET quantidade = 12.000 WHERE id_venda = 546527 AND id_produto = 10050 AND id = 32770;
+UPDATE pdv.vendapromocaoproduto SET quantidade = 24.000 WHERE id_venda = 546527 AND id_produto = 20694 AND id = 32771;
+UPDATE pdv.vendapromocaoproduto SET quantidade = 24.000 WHERE id_venda = 546527 AND id_produto = 36762 AND id = 32772;
 
 
 
